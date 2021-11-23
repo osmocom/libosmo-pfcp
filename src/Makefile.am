@@ -1,0 +1,3 @@
+SUBDIRS = \
+	libosmo-pfcp \
+	$(NULL)

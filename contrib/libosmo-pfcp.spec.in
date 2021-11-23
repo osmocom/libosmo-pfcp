@@ -1,0 +1,50 @@
+## Disable LTO for now since it breaks compilation of the tests
+## https://osmocom.org/issues/4113
+%define _lto_cflags %{nil}
+
+Name:           libosmo-pfcp
+Version:        @VERSION@
+Release:        0
+Summary:        libosmo-pfcp: PFCP protocol encoding and decoding, and generic PFCP endpoint implementation
+License:        AGPL-3.0-or-later AND GPL-2.0-or-later
+Group:          Hardware/Mobile
+URL:            https://osmocom.org/projects/libosmo-pfcp
+Source:         %{name}-%{version}.tar.xz
+BuildRequires:  autoconf-archive
+BuildRequires:  automake >= 1.9
+BuildRequires:  libtool >= 2
+BuildRequires:  lksctp-tools-devel
+BuildRequires:  pkgconfig >= 0.20
+%if 0%{?suse_version}
+BuildRequires:  systemd-rpm-macros
+%endif
+BuildRequires:  pkgconfig(libosmocore) >= 1.6.0
+BuildRequires:  pkgconfig(libosmoctrl) >= 1.6.0
+BuildRequires:  pkgconfig(libosmovty) >= 1.6.0
+BuildRequires:  pkgconfig(talloc)
+%{?systemd_requires}
+
+%description
+libosmo-pfcp: PFCP protocol encoding and decoding, and generic PFCP endpoint implementation
+
+%prep
+%setup -q
+
+%build
+echo "%{version}" >.tarball-version
+autoreconf -fi
+%configure
+make %{?_smp_mflags}
+
+%install
+%make_install
+
+%check
+make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
+
+%files
+%license COPYING
+%doc AUTHORS README.md
+%{_bindir}/libosmo-pfcp
+
+%changelog

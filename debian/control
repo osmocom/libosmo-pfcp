@@ -1,0 +1,42 @@
+Source: osmo-upf
+Section: net
+Priority: extra
+Maintainer: Osmocom team <openbsc@lists.osmocom.org>
+Build-Depends: debhelper (>=9),
+               dh-autoreconf,
+               autotools-dev,
+               autoconf,
+               autoconf-archive,
+               automake,
+               libtool,
+               pkg-config,
+               python3-minimal,
+               libtalloc-dev,
+               libosmocore-dev (>= 1.6.0),
+               osmo-gsm-manuals-dev (>= 1.2.0)
+Standards-Version: 3.9.8
+Vcs-Git: git://git.osmocom.org/osmo-upf.git
+Vcs-Browser: https://git.osmocom.org/osmo-upf/
+Homepage: https://projects.osmocom.org/projects/osmo-upf
+
+Package: osmo-upf
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: OsmoUPF: Osmocom User Plane Function
+
+Package: osmo-upf-dbg
+Section: debug
+Architecture: any
+Multi-Arch: same
+Depends: osmo-upf (= ${binary:Version}), ${misc:Depends}
+Description: OsmoUPF: Osmocom User Plane Function
+
+Package: osmo-upf-doc
+Architecture: all
+Section: doc
+Priority: optional
+Depends: ${misc:Depends}
+Description: ${misc:Package} PDF documentation
+ Various manuals: user manual, VTY reference manual and/or
+ protocol/interface manuals.
