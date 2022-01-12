@@ -34,12 +34,13 @@
 
 #include <osmocom/pfcp/pfcp_ies_custom.h>
 #include <osmocom/pfcp/pfcp_strs.h>
+#include <osmocom/pfcp/pfcp_msg.h>
 
 /* Assumes presence of local variable osmo_pfcp_msg *m. m->log_ctx may be NULL. */
 #define RETURN_ERROR(RC, FMT, ARGS...) \
 	do {\
 		OSMO_ASSERT(decoded_struct); \
-		LOGP(DLPFCP, LOGL_ERROR, FMT " (%d: %s)\n", ##ARGS, RC, \
+		OSMO_LOG_PFCP_MSG(OSMO_PFCP_MSG_FOR_IES(decoded_struct), LOGL_ERROR, FMT " (%d: %s)\n", ##ARGS, RC, \
 				  strerror((RC) > 0 ? (RC) : -(RC))); \
 		return RC; \
 	} while (0)

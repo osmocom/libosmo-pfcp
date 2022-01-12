@@ -25,6 +25,7 @@ noinst_LIBRARIES = \
 
 libosmo_pfcp_a_SOURCES = \
 	pfcp_ies_custom.c \
+	pfcp_msg.c \
 	pfcp_strs.c \
 	\
 	pfcp_ies_auto.c \
