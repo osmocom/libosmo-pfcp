@@ -12,3 +12,9 @@ AT_KEYWORDS([gtlv_dec_enc])
 cat $abs_srcdir/libosmo-gtlv/gtlv_dec_enc_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/libosmo-gtlv/gtlv_dec_enc_test], [], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([gtlv_gen])
+AT_KEYWORDS([gtlv_gen])
+cat $abs_srcdir/libosmo-gtlv/test_gtlv_gen/gtlv_gen_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/libosmo-gtlv/test_gtlv_gen/gtlv_gen_test], [], [expout], [ignore])
+AT_CLEANUP

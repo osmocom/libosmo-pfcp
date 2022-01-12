@@ -1,3 +1,7 @@
+SUBDIRS = \
+	test_gtlv_gen \
+	$(NULL)
+
 AM_CPPFLAGS = \
 	$(all_includes) \
 	-I$(top_srcdir)/include \
@@ -40,3 +44,4 @@ gtlv_dec_enc_test_LDADD = \
 update_exp:
 	$(builddir)/gtlv_test >$(srcdir)/gtlv_test.ok
 	$(builddir)/gtlv_dec_enc_test >$(srcdir)/gtlv_dec_enc_test.ok
+	$(MAKE) -C test_gtlv_gen update_exp
