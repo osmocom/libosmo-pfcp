@@ -25,6 +25,7 @@ lib_LTLIBRARIES = \
 
 libosmo_pfcp_la_SOURCES = \
 	pfcp_endpoint.c \
+	pfcp_heartbeat_fsm.c \
 	pfcp_ies_custom.c \
 	pfcp_msg.c \
 	pfcp_strs.c \
