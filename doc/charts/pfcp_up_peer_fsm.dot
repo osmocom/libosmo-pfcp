@@ -1,0 +1,27 @@
+digraph G {
+rankdir=TB
+labelloc=t; label="PFCP UP peer FSM\nUser Plane side, managing association with remote CP peer"
+
+txrx [label="PFCP socket",shape="box"]
+
+txrx -> NOT_ASSOCIATED [label="rx PFCP msg from\nnew remote IP"]
+txrx -> NOT_ASSOCIATED [label="EV_RX_ASSOC_SETUP_REQ",style=dotted]
+
+NOT_ASSOCIATED -> ASSOCIATED [label="Assoc Setup Req",shape="box"]
+
+heartbeat [label="PFCP heartbeat FSM",shape=box3d]
+ASSOCIATED -> heartbeat [label="alloc()",style=dotted]
+heartbeat -> ASSOCIATED [label="EV_HEARTBEAT_FAILURE",style=dotted]
+
+txrx -> ASSOCIATED [label="EV_RX_SESSION_EST_REQ",style=dotted]
+up_session [label="PFCP UP session FSM",shape=box3d]
+ASSOCIATED -> up_session [label="up_session_create()",style=dotted]
+
+txrx -> ASSOCIATED [label="EV_RX_ASSOC_UPD_REQ",style=dotted]
+ASSOCIATED -> GRACEFUL_RELEASE [label="Association Update\nindicating graceful release"]
+
+ASSOCIATED -> term [label="Heartbeat failure"]
+GRACEFUL_RELEASE -> term
+term [shape="octagon"]
+
+}

@@ -1,0 +1,21 @@
+digraph G {
+rankdir=TB
+labelloc=t; label="PFCP heartbeat FSM"
+
+peer [label="PFCP CP/UP peer FSM",shape=box3d]
+txrx [label="PFCP socket",shape=box]
+
+peer -> IDLE [label="alloc()"]
+IDLE -> WAIT_HEARTBEAT_RESP -> IDLE
+WAIT_HEARTBEAT_RESP -> term
+term [shape="octagon"]
+
+WAIT_HEARTBEAT_RESP -> txrx [label="tx_heartbeat_req()",style=dotted]
+txrx -> WAIT_HEARTBEAT_RESP [label="HEARTBEAT_EV_RX_RESP",style=dotted]
+
+term -> peer [label="PEER_EV_HEARTBEAT_FAILURE",style=dotted]
+
+txrx2 [label="PFCP socket",shape=box]
+txrx2 -> txrx2 [label="rx Heartbeat Req\ntx Heartbeat Resp",style=dotted]
+
+}

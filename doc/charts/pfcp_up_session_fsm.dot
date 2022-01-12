@@ -1,0 +1,21 @@
+digraph G {
+rankdir=TB
+labelloc=t; label="PFCP UP session FSM"
+
+peer [label="PFCP UP peer FSM",shape=box3d]
+peer -> ESTABLISHED [label="rx_session_est_req()"]
+
+txrx [label="PFCP socket",shape="box"]
+txrx2 [label="PFCP socket",shape="box"]
+
+txrx -> ESTABLISHED [label="EV_RX_SESSION_MOD_REQ",style=dotted]
+ESTABLISHED -> txrx [label="tx_session_mod_resp()",style=dotted,constraint=false]
+ESTABLISHED -> ESTABLISHED [label="Mod"]
+
+txrx2 -> ESTABLISHED [label="EV_RX_SESSION_DEL_REQ",style=dotted]
+ESTABLISHED -> txrx2 [label="tx_session_del_resp()",style=dotted,constraint=false]
+
+ESTABLISHED -> term [label="Deletion"]
+term [shape="octagon"]
+
+}

@@ -1,0 +1,23 @@
+digraph G {
+rankdir=TB
+labelloc=t; label="PFCP Overview\n3GPP TS 29.244 3.1, 5.8.1"
+
+subgraph cluster_N1_CP {
+	label="Node: Control Plane function";style=dotted
+	N1_E_CP [label="CP Entity"]
+}
+
+subgraph cluster_N2_UP {
+	label="Node: User Plane function\nNode ID: my-userplane.com\n(FQDN may provide multiple PFCP Entities)";style=dotted
+	N2_E_UP [label="UP Entity\n8.7.6.1"]
+	N2_E_UP2 [label="UP Entity\n8.7.6.2"]
+}
+
+subgraph cluster_N3_UP {
+	label="Node: User Plane function\nNode ID: 1.2.3.4\n(IP address means only one PFCP Entity)";style=dotted
+	N3_E_UP [label="UP Entity\n1.2.3.4\n(osmo-upf)"]
+}
+
+N1_E_CP -> N3_E_UP [label="PFCP Request"]
+N1_E_CP -> N2_E_UP
+}

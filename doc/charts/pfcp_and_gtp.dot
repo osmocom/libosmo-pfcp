@@ -1,0 +1,20 @@
+digraph G {
+rankdir=LR
+labelloc=t; label="PFCP and GTP"
+
+SGSN [label="SGSN\n123.44.0.9"]
+SGWC [label="SGW-C\n123.44.05"]
+subgraph cluster_UPF {
+ label="OsmoUPF";
+ SGWU [label="SGW-U\n123.44.0.6"];
+ GTPk [label="kernel GTP\n123.44.0.6"]
+}
+
+SGSN -> SGWC [label="S4\nGTPv2-C"]
+SGWC -> SGWU [label="Sxa\nPFCP\nSession Establishment:\n"]
+SGSN -> GTPk [label="S4\nGTPv1-U",dir=both]
+
+MS [label="MS\n192.168.104.176"]
+MS -> SGSN [dir=both]
+
+}

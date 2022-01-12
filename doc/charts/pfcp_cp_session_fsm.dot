@@ -1,0 +1,28 @@
+digraph G {
+rankdir=TB
+labelloc=t; label="PFCP CP session FSM"
+
+cp [label="CP function",shape=box]
+cp -> WAIT_ESTABLISHMENT_RESP [label="cp_session_create(cp_peer)\niff cp_peer in state ASSOCIATED"]
+
+txrx [label="PFCP socket",shape=box]
+
+WAIT_ESTABLISHMENT_RESP -> txrx [label="tx_session_est_req()",style=dotted]
+txrx -> WAIT_ESTABLISHMENT_RESP [label="EV_RX_SESSION_EST_RESP",style=dotted]
+
+WAIT_ESTABLISHMENT_RESP -> ESTABLISHED [label="Est Resp"]
+
+cp -> ESTABLISHED [label="cp_session_modify()",style=dotted]
+ESTABLISHED -> WAIT_MODIFICATION_RESP [label="cp_session_modify()"]
+WAIT_MODIFICATION_RESP -> txrx [label="tx_session_mod_req()",style=dotted]
+txrx -> WAIT_MODIFICATION_RESP [label="EV_RX_SESSION_MOD_RESP",style=dotted,constraint=false]
+WAIT_MODIFICATION_RESP -> ESTABLISHED [label="Mod Resp"]
+
+cp -> ESTABLISHED [label="cp_session_delete()",style=dotted]
+ESTABLISHED -> WAIT_DELETION_RESP [label="cp_session_delete()"]
+WAIT_DELETION_RESP -> txrx [label="tx_session_del_req()",style=dotted]
+txrx -> WAIT_DELETION_RESP [label="EV_RX_SESSION_DEL_RESP",style=dotted,constraint=false]
+WAIT_DELETION_RESP -> term
+term [shape="octagon"]
+
+}
