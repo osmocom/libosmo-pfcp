@@ -22,4 +22,5 @@ noinst_LIBRARIES = \
 
 libosmo_gtlv_a_SOURCES = \
 	gtlv.c \
+	gtlv_dec_enc.c \
 	$(NULL)
