@@ -1,0 +1,73 @@
+{hscale=1}
+upf = User Plane function
+cpf = Control Plane function
+
+cpf () .	Look up UPF,
+		pick any one of the available
+		IP addrs for the UPF
+
+...
+upf <> cpf	not yet associated
+upf () cpf	reject any session related msgs
+...
+
+upf < cpf	PFCP Association Setup Request
+		CP function Node Id, features
+upf > cpf	PFCP Association Setup Response
+		UP function Node Id, features
+upf <> cpf	associated
+upf () cpf	start Heartbeat checking
+...
+upf < cpf	Heartbeat Request
+upf > cpf	Heartbeat Response
+...
+upf > cpf	Heartbeat Request
+upf < cpf	Heartbeat Response
+...
+
+upf < cpf	Session Establishment Request
+		CP Node-Id
+		CP F-SEID
+		1+ Packet Detection Rule(s)
+		1+ Forward Action Rule(s)
+upf > cpf	Session Establishment Response
+
+upf < cpf	Session Modification Request
+upf > cpf	Session Modification Response
+
+upf < cpf	Session Deletion Request
+upf > cpf	Session Deletion Response
+
+...
+upf () cpf	F-SEID: accept any other IP addrs than peer's Node Id
+...
+
+---		Graceful release initiated by CP
+
+upf < cpf	Association Update Request
+		with PFCP Association Release Preparation Start = 1
+upf > cpf	Association Update Response
+upf > cpf	Session Report Request
+		to report non-zero usage reports,
+		at least one message per PFCP Session
+upf < cpf	Association Release Request
+upf > cpf	Association Release Response
+
+---		Graceful release initiated by UP
+
+upf > cpf	Association Update Request
+		with PFCP Association Release Preparation = 1
+cpf <> .	refrain from establishing sessions
+upf < cpf	Association Update Response
+upf < cpf	Session Deletion Request(s)
+		to collect usage reports
+		per session
+upf > cpf	Session Deletion Response(s)
+cpf () .	wait Graceful Release Period
+upf < cpf	Association Release Request
+upf > cpf	Association Release Response
+
+---		Release (immediate)
+
+upf < cpf	Association Release Request
+upf > cpf	Association Release Response
