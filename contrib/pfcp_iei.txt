@@ -1,0 +1,271 @@
+1	CREATE_PDR	Create PDR
+2	PDI	PDI
+3	CREATE_FAR	Create FAR
+4	FORW_PARAMS	Forwarding Parameters
+5	DUPL_PARAMS	Duplicating Parameters
+6	CREATE_URR	Create URR
+7	CREATE_QER	Create QER
+8	CREATED_PDR	Created PDR
+9	UPD_PDR	Update PDR
+10	UPD_FAR	Update FAR
+11	UPD_FORW_PARAMS	Update Forwarding Parameters
+12	UPD_BAR_SESS_REP_RESP	Update BAR (PFCP Session Report Response)
+13	UPD_URR	Update URR
+14	UPD_QER	Update QER
+15	REMOVE_PDR	Remove PDR
+16	REMOVE_FAR	Remove FAR
+17	REMOVE_URR	Remove URR
+18	REMOVE_QER	Remove QER
+19	CAUSE	Cause
+20	SOURCE_IFACE	Source Interface
+21	F_TEID	F-TEID
+22	NETWORK_INST	Network Instance
+23	SDF_FILTER	SDF Filter
+24	APPLICATION_ID	Application ID
+25	GATE_STATUS	Gate Status
+26	MBR	MBR
+27	GBR	GBR
+28	QER_CORRELATION_ID	QER Correlation ID
+29	PRECEDENCE	Precedence
+30	TRANSPORT_LEVEL_MARKING	Transport Level Marking
+31	VOLUME_THRESH	Volume Threshold
+32	TIME_THRESH	Time Threshold
+33	MONITORING_TIME	Monitoring Time
+34	SUBSEQUENT_VOLUME_THRESH	Subsequent Volume Threshold
+35	SUBSEQUENT_TIME_THRESH	Subsequent Time Threshold
+36	INACT_DETECTION_TIME	Inactivity Detection Time
+37	REPORTING_TRIGGERS	Reporting Triggers
+38	REDIRECT_INFO	Redirect Information
+39	REP_TYPE	Report Type
+40	OFFENDING_IE	Offending IE
+41	FORW_POLICY	Forwarding Policy
+42	DESTINATION_IFACE	Destination Interface
+43	UP_FUNCTION_FEATURES	UP Function Features
+44	APPLY_ACTION	Apply Action
+45	DL_DATA_SERVICE_INFO	Downlink Data Service Information
+46	DL_DATA_NOTIFICATION_DELAY	Downlink Data Notification Delay
+47	DL_BUFF_DURATION	DL Buffering Duration
+48	DL_BUFF_SUGGESTED_PACKET_COUNT	DL Buffering Suggested Packet Count
+49	PFCPSMREQ_FLAGS	PFCPSMReq-Flags
+50	PFCPSRRSP_FLAGS	PFCPSRRsp-Flags
+51	LOAD_CTRL_INFO	Load Control Information
+52	SEQUENCE_NUMBER	Sequence Number
+53	METRIC	Metric
+54	OVERLOAD_CTRL_INFO	Overload Control Information
+55	TIMER	Timer
+56	PDR_ID	PDR ID
+57	F_SEID	F-SEID
+58	APPLICATION_IDS_PFDS	Application ID's PFDs
+59	PFD_CONTEXT	PFD context
+60	NODE_ID	Node ID
+61	PFD_CONTENTS	PFD contents
+62	MEAS_METHOD	Measurement Method
+63	USAGE_REP_TRIGGER	Usage Report Trigger
+64	MEAS_PERIOD	Measurement Period
+65	FQ_CSID	FQ-CSID
+66	VOLUME_MEAS	Volume Measurement
+67	DURATION_MEAS	Duration Measurement
+68	APPLICATION_DETECTION_INFO	Application Detection Information
+69	TIME_OF_FIRST_PACKET	Time of First Packet
+70	TIME_OF_LAST_PACKET	Time of Last Packet
+71	QUOTA_HOLDING_TIME	Quota Holding Time
+72	DROPPED_DL_TRAFFIC_THRESH	Dropped DL Traffic Threshold
+73	VOLUME_QUOTA	Volume Quota
+74	TIME_QUOTA	Time Quota
+75	START_TIME	Start Time
+76	END_TIME	End Time
+77	QUERY_URR	Query URR
+78	USAGE_REP_SESS_MOD_RESP	Usage Report (Session Modification Response)
+79	USAGE_REP_SESS_DEL_RESP	Usage Report (Session Deletion Response)
+80	USAGE_REP_SESS_REP_REQ	Usage Report (Session Report Request)
+81	URR_ID	URR ID
+82	LINKED_URR_ID	Linked URR ID
+83	DL_DATA_REP	Downlink Data Report
+84	OUTER_HEADER_CREATION	Outer Header Creation
+85	CREATE_BAR	Create BAR
+86	UPD_BAR_SESS_MOD_REQ	Update BAR (Session Modification Request)
+87	REMOVE_BAR	Remove BAR
+88	BAR_ID	BAR ID
+89	CP_FUNCTION_FEATURES	CP Function Features
+90	USAGE_INFO	Usage Information
+91	APPLICATION_INST_ID	Application Instance ID
+92	FLOW_INFO	Flow Information
+93	UE_IP_ADDRESS	UE IP Address
+94	PACKET_RATE	Packet Rate
+95	OUTER_HEADER_REMOVAL	Outer Header Removal
+96	RECOVERY_TIME_STAMP	Recovery Time Stamp
+97	DL_FLOW_LEVEL_MARKING	DL Flow Level Marking
+98	HEADER_ENRICHMENT	Header Enrichment
+99	ERROR_IND_REP	Error Indication Report
+100	MEAS_INFO	Measurement Information
+101	NODE_REP_TYPE	Node Report Type
+102	USER_PLANE_PATH_FAILURE_REP	User Plane Path Failure Report
+103	REMOTE_GTP_U_PEER	Remote GTP-U Peer
+104	UR_SEQN	UR-SEQN
+105	UPD_DUPL_PARAMS	Update Duplicating Parameters
+106	ACTIVATE_PREDEFINED_RULES	Activate Predefined Rules
+107	DEACTIVATE_PREDEFINED_RULES	Deactivate Predefined Rules
+108	FAR_ID	FAR ID
+109	QER_ID	QER ID
+110	OCI_FLAGS	OCI Flags
+111	PFCP_ASSOC_RELEASE_REQ	PFCP Association Release Request
+112	GRACEFUL_RELEASE_PERIOD	Graceful Release Period
+113	PDN_TYPE	PDN Type
+114	FAILED_RULE_ID	Failed Rule ID
+115	TIME_QUOTA_MECHANISM	Time Quota Mechanism
+116	RESERVED	Reserved
+117	USER_PLANE_INACT_TIMER	User Plane Inactivity Timer
+118	AGGREGATED_URRS	Aggregated URRs
+119	MULTIPLIER	Multiplier
+120	AGGREGATED_URR_ID	Aggregated URR ID
+121	SUBSEQUENT_VOLUME_QUOTA	Subsequent Volume Quota
+122	SUBSEQUENT_TIME_QUOTA	Subsequent Time Quota
+123	RQI	RQI
+124	QFI	QFI
+125	QUERY_URR_REFERENCE	Query URR Reference
+126	ADDITIONAL_USAGE_REPS_INFO	Additional Usage Reports Information
+127	CREATE_TRAFFIC_ENDPOINT	Create Traffic Endpoint
+128	CREATED_TRAFFIC_ENDPOINT	Created Traffic Endpoint
+129	UPD_TRAFFIC_ENDPOINT	Update Traffic Endpoint
+130	REMOVE_TRAFFIC_ENDPOINT	Remove Traffic Endpoint
+131	TRAFFIC_ENDPOINT_ID	Traffic Endpoint ID
+132	ETHERNET_PACKET_FILTER	Ethernet Packet Filter
+133	MAC_ADDRESS	MAC address
+134	C_TAG	C-TAG
+135	S_TAG	S-TAG
+136	ETHERTYPE	Ethertype
+137	PROXYING	Proxying
+138	ETHERNET_FILTER_ID	Ethernet Filter ID
+139	ETHERNET_FILTER_PROPERTIES	Ethernet Filter Properties
+140	SUGGESTED_BUFF_PACKETS_COUNT	Suggested Buffering Packets Count
+141	USER_ID	User ID
+142	ETHERNET_PDU_SESS_INFO	Ethernet PDU Session Information
+143	ETHERNET_TRAFFIC_INFO	Ethernet Traffic Information
+144	MAC_ADDRS_DETECTED	MAC Addresses Detected
+145	MAC_ADDRS_REMOVED	MAC Addresses Removed
+146	ETHERNET_INACT_TIMER	Ethernet Inactivity Timer
+147	ADDITIONAL_MONITORING_TIME	Additional Monitoring Time
+148	EVENT_QUOTA	Event Quota
+149	EVENT_THRESH	Event Threshold
+150	SUBSEQUENT_EVENT_QUOTA	Subsequent Event Quota
+151	SUBSEQUENT_EVENT_THRESH	Subsequent Event Threshold
+152	TRACE_INFO	Trace Information
+153	FRAMED_ROUTE	Framed-Route
+154	FRAMED_ROUTING	Framed-Routing
+155	FRAMED_IPV6_ROUTE	Framed-IPv6-Route
+156	TIME_STAMP	Time Stamp
+157	AVERAGING_WINDOW	Averaging Window
+158	PAGING_POLICY_INDICATOR	Paging Policy Indicator
+159	APN_DNN	APN/DNN
+160	3GPP_IFACE_TYPE	3GPP Interface Type
+161	PFCPSRREQ_FLAGS	PFCPSRReq-Flags
+162	PFCPAUREQ_FLAGS	PFCPAUReq-Flags
+163	ACTIVATION_TIME	Activation Time
+164	DEACTIVATION_TIME	Deactivation Time
+165	CREATE_MAR	Create MAR
+166	3GPP_ACCESS_FORW_ACTION_INFO	3GPP Access Forwarding Action Information
+167	NON_3GPP_ACCESS_FORW_ACTION_INFO	Non-3GPP Access Forwarding Action Information
+168	REMOVE_MAR	Remove MAR
+169	UPD_MAR	Update MAR
+170	MAR_ID	MAR ID
+171	STEERING_FUNCTIONALITY	Steering Functionality
+172	STEERING_MODE	Steering Mode
+173	WEIGHT	Weight
+174	PRIORITY	Priority
+175	UPD_3GPP_ACCESS_FORW_ACTION_INFO	Update 3GPP Access Forwarding Action Information
+176	UPD_NON_3GPP_ACCESS_FORW_ACTION_INFO	Update Non 3GPP Access Forwarding Action Information
+177	UE_IP_ADDRESS_POOL_IDENTITY	UE IP address Pool Identity
+178	ALTERNATIVE_SMF_IP_ADDRESS	Alternative SMF IP Address
+179	PACKET_REPLICATION_AND_DETECTION_CARRY_ON_INFO	Packet Replication and Detection Carry-On Information
+180	SMF_SET_ID	SMF Set ID
+181	QUOTA_VALIDITY_TIME	Quota Validity Time
+182	NUMBER_OF_REPS	Number of Reports
+183	PFCP_SESS_RETENTION_INFO_IN_ASSOC_SETUP_REQ	PFCP Session Retention Information (within PFCP Association Setup Request)
+184	PFCPASRSP_FLAGS	PFCPASRsp-Flags
+185	CP_ENTITY_IP_ADDRESS	CP PFCP Entity IP Address
+186	PFCPSEREQ_FLAGS	PFCPSEReq-Flags
+187	USER_PLANE_PATH_RECOVERY_REP	User Plane Path Recovery Report
+188	IP_MULTICAST_ADDR_INFO_IN_SESS_EST_REQ	IP Multicast Addressing Info within PFCP Session Establishment Request
+189	JOIN_IP_MULTICAST_INFO_IE_IN_USAGE_REP	Join IP Multicast Information IE within Usage Report
+190	LEAVE_IP_MULTICAST_INFO_IE_IN_USAGE_REP	Leave IP Multicast Information IE within Usage Report
+191	IP_MULTICAST_ADDRESS	IP Multicast Address
+192	SOURCE_IP_ADDRESS	Source IP Address
+193	PACKET_RATE_STATUS	Packet Rate Status
+194	CREATE_BRIDGE_INFO_FOR_TSC	Create Bridge Info for TSC
+195	CREATED_BRIDGE_INFO_FOR_TSC	Created Bridge Info for TSC
+196	DS_TT_PORT_NUMBER	DS-TT Port Number
+197	NW_TT_PORT_NUMBER	NW-TT Port Number
+198	TSN_BRIDGE_ID	TSN Bridge ID
+199	TSC_MGMT_INFO_IE_IN_SESS_MOD_REQ	TSC Management Information IE within PFCP Session Modification Request
+200	TSC_MGMT_INFO_IE_IN_SESS_MOD_RESP	TSC Management Information IE within PFCP Session Modification Response
+201	TSC_MGMT_INFO_IE_IN_SESS_REP_REQ	TSC Management Information IE within PFCP Session Report Request
+202	PORT_MGMT_INFO_CONTAINER	Port Management Information Container
+203	CLOCK_DRIFT_CTRL_INFO	Clock Drift Control Information
+204	REQUESTED_CLOCK_DRIFT_INFO	Requested Clock Drift Information
+205	CLOCK_DRIFT_REP	Clock Drift Report
+206	TSN_TIME_DOMAIN_NUMBER	TSN Time Domain Number
+207	TIME_OFFSET_THRESH	Time Offset Threshold
+208	CUMULATIVE_RATERATIO_THRESH	Cumulative rateRatio Threshold
+209	TIME_OFFSET_MEAS	Time Offset Measurement
+210	CUMULATIVE_RATERATIO_MEAS	Cumulative rateRatio Measurement
+211	REMOVE_SRR	Remove SRR
+212	CREATE_SRR	Create SRR
+213	UPD_SRR	Update SRR
+214	SESS_REP	Session Report
+215	SRR_ID	SRR ID
+216	ACCESS_AVAIL_CTRL_INFO	Access Availability Control Information
+217	REQUESTED_ACCESS_AVAIL_INFO	Requested Access Availability Information
+218	ACCESS_AVAIL_REP	Access Availability Report
+219	ACCESS_AVAIL_INFO	Access Availability Information
+220	PROVIDE_ATSSS_CTRL_INFO	Provide ATSSS Control Information
+221	ATSSS_CTRL_PARAMS	ATSSS Control Parameters
+222	MPTCP_CTRL_INFO	MPTCP Control Information
+223	ATSSS_LL_CTRL_INFO	ATSSS-LL Control Information
+224	PMF_CTRL_INFO	PMF Control Information
+225	MPTCP_PARAMS	MPTCP Parameters
+226	ATSSS_LL_PARAMS	ATSSS-LL Parameters
+227	PMF_PARAMS	PMF Parameters
+228	MPTCP_ADDRESS_INFO	MPTCP Address Information
+229	UE_LINK_SPECIFIC_IP_ADDRESS	UE Link-Specific IP Address
+230	PMF_ADDRESS_INFO	PMF Address Information
+231	ATSSS_LL_INFO	ATSSS-LL Information
+232	DATA_NETWORK_ACCESS_IDENTIFIER	Data Network Access Identifier
+233	UE_IP_ADDRESS_POOL_INFO	UE IP address Pool Information
+234	AVERAGE_PACKET_DELAY	Average Packet Delay
+235	MIN_PACKET_DELAY	Minimum Packet Delay
+236	MAX_PACKET_DELAY	Maximum Packet Delay
+237	QOS_REP_TRIGGER	QoS Report Trigger
+238	GTP_U_PATH_QOS_CTRL_INFO	GTP-U Path QoS Control Information
+239	GTP_U_PATH_QOS_REP_NODE_REP_REQ	GTP-U Path QoS Report (PFCP Node Report Request)
+240	QOS_INFO_IN_GTP_U_PATH_QOS_REP	QoS Information in GTP-U Path QoS Report
+241	GTP_U_PATH_IFACE_TYPE	GTP-U Path Interface Type
+242	QOS_MONITORING_PER_QOS_FLOW_CTRL_INFO	QoS Monitoring per QoS flow Control Information
+243	REQUESTED_QOS_MONITORING	Requested QoS Monitoring
+244	REPORTING_FREQUENCY	Reporting Frequency
+245	PACKET_DELAY_THRESHOLDS	Packet Delay Thresholds
+246	MIN_WAIT_TIME	Minimum Wait Time
+247	QOS_MONITORING_REP	QoS Monitoring Report
+248	QOS_MONITORING_MEAS	QoS Monitoring Measurement
+249	MT_EDT_CTRL_INFO	MT-EDT Control Information
+250	DL_DATA_PACKETS_SIZE	DL Data Packets Size
+251	QER_CTRL_INDICATIONS	QER Control Indications
+252	PACKET_RATE_STATUS_REP	Packet Rate Status Report
+253	NF_INST_ID	NF Instance ID
+254	ETHERNET_CONTEXT_INFO	Ethernet Context Information
+255	REDUNDANT_TRANSMISSION_PARAMS	Redundant Transmission Parameters
+256	UPDATED_PDR	Updated PDR
+257	S_NSSAI	S-NSSAI
+258	IP_VERSION	IP version
+259	PFCPASREQ_FLAGS	PFCPASReq-Flags
+260	DATA_STATUS	Data Status
+261	PROVIDE_RDS_CONF_INFO	Provide RDS configuration information
+262	RDS_CONF_INFO	RDS configuration information
+263	QUERY_PACKET_RATE_STATUS_IE_IN_SESS_MOD_REQ	Query Packet Rate Status IE within PFCP Session Modification Request
+264	PACKET_RATE_STATUS_REP_IE_IN_SESS_MOD_RESP	Packet Rate Status Report IE within PFCP Session Modification Response
+265	MPTCP_APPLICABLE_IND	MPTCP Applicable Indication
+266	BRIDGE_MGMT_INFO_CONTAINER	Bridge Management Information Container
+267	UE_IP_ADDRESS_USAGE_INFO	UE IP Address Usage Information
+268	NUMBER_OF_UE_IP_ADDRS	Number of UE IP Addresses
+269	VALIDITY_TIMER	Validity Timer
+270	REDUNDANT_TRANSMISSION_FORW_PARAMS	Redundant Transmission Forwarding Parameters
+271	TRANSPORT_DELAY_REPORTING	Transport Delay Reporting

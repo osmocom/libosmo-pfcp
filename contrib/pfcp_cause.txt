@@ -1,0 +1,19 @@
+0	RESERVED	Reserved
+1	REQUEST_ACCEPTED	Request accepted (success)
+2	MORE_USAGE_REPORT_TO_SEND	More Usage Report to send
+64	REQUEST_REJECTED	Request rejected (reason not specified)
+65	SESSION_CTX_NOT_FOUND	Session context not found
+66	MANDATORY_IE_MISSING	Mandatory IE missing
+67	CONDITIONAL_IE_MISSING	Conditional IE missing
+68	INVALID_LENGTH	Invalid length
+69	MANDATORY_IE_INCORRECT	Mandatory IE incorrect
+70	INVALID_FORW_POLICY	Invalid Forwarding Policy
+71	INVALID_F_TEID_ALLOC_OPTION	Invalid F-TEID allocation option
+72	NO_ESTABLISHED_PFCP_ASSOC	No established PFCP Association
+73	RULE_CREATION_MOD_FAILURE	Rule creation/modification Failure
+74	PFCP_ENTITY_IN_CONGESTION	PFCP entity in congestion
+75	NO_RESOURCES_AVAILABLE	No resources available
+76	SERVICE_NOT_SUPPORTED	Service not supported
+77	SYSTEM_FAILURE	System failure
+78	REDIRECTION_REQUESTED	Redirection Requested
+79	ALL_DYNAMIC_ADDRESSES_ARE_OCCUPIED	All dynamic addresses are occupied
