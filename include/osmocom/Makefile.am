@@ -1,3 +1,4 @@
 SUBDIRS = \
+	gtlv \
 	pfcp \
 	$(NULL)

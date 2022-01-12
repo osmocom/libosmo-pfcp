@@ -1,0 +1,256 @@
+
+=== start: test_t8l8v[0]
+- encoded: 00 02 23 42 ff 02 23 42 01 00 7b ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 65 01 11 66 02 22 22 67 03 33 33 33 .
+- decoding:
+  T=0 L=2 v=2342
+  T=255 L=2 v=2342
+  T=1 L=0 v=
+  T=123 L=255 v=ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+  T=101 L=1 v=11
+  T=102 L=2 v=2222
+  T=103 L=3 v=333333
+- peeking:
+  peek T=0
+  peek T=255
+  peek T=1
+  peek T=123
+  peek T=101
+  peek T=102
+  peek T=103
+  peek T=-ENOENT
+- decoding in reverse order:
+  T=103 L=3 v=333333
+  T=102 L=2 v=2222
+  T=101 L=1 v=11
+  T=123 L=255 v=ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+  T=1 L=0 v=
+  T=255 L=2 v=2342
+  T=0 L=2 v=2342
+- decoding every second tag:
+  T=255 L=2 v=2342
+  T=123 L=255 v=ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+  T=102 L=2 v=2222
+- enforcing order: without restart, a past tag is not parsed again:
+  osmo_gtlv_load_next_by_tag(0) rc=-ENOENT
+=== end: test_t8l8v[0]
+
+=== start: test_t8l8v[1]
+- encoded: 2a 01 42 02 02 01 01 02 02 22 22 03 01 11 03 02 22 22 03 03 33 33 33 17 01 23 2a 08 66 6f 72 74 79 74 77 6f 17 0b 74 77 65 6e 74 79 74 68 72 65 65 .
+- decoding:
+  T=42 L=1 v=42
+  T=2 L=2 v=0101
+  T=2 L=2 v=2222
+  T=3 L=1 v=11
+  T=3 L=2 v=2222
+  T=3 L=3 v=333333
+  T=23 L=1 v=23
+  T=42 L=8 v=666f72747974776f
+  T=23 L=11 v=7477656e74797468726565
+- peeking:
+  peek T=42
+  peek T=2
+  peek T=2
+  peek T=3
+  peek T=3
+  peek T=3
+  peek T=23
+  peek T=42
+  peek T=23
+  peek T=-ENOENT
+- decoding in reverse order:
+   (mismatch: T=23 L=1 v=23, checking for another occurrence of T=23)
+  T=23 L=11 v=7477656e74797468726565
+   (mismatch: T=42 L=1 v=42, checking for another occurrence of T=42)
+  T=42 L=8 v=666f72747974776f
+  T=23 L=1 v=23
+   (mismatch: T=3 L=1 v=11, checking for another occurrence of T=3)
+   (mismatch: T=3 L=2 v=2222, checking for another occurrence of T=3)
+  T=3 L=3 v=333333
+   (mismatch: T=3 L=1 v=11, checking for another occurrence of T=3)
+  T=3 L=2 v=2222
+  T=3 L=1 v=11
+   (mismatch: T=2 L=2 v=0101, checking for another occurrence of T=2)
+  T=2 L=2 v=2222
+  T=2 L=2 v=0101
+  T=42 L=1 v=42
+- decoding every second tag:
+  T=2 L=2 v=0101
+  T=3 L=1 v=11
+   (mismatch: T=3 L=2 v=2222, checking for another occurrence of T=3)
+  T=3 L=3 v=333333
+  T=42 L=8 v=666f72747974776f
+- enforcing order: without restart, a past tag is not parsed again:
+  osmo_gtlv_load_next_by_tag(42) rc=-ENOENT
+=== end: test_t8l8v[1]
+
+=== start: test_t16l16v[0]
+- encoded: 00 00 00 02 23 42 ff ff 00 02 23 42 00 01 00 00 00 7b 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 e9 00 01 11 03 ea 00 02 22 22 03 eb 00 03 33 33 33 .
+- decoding:
+  T=0 L=2 v=2342
+  T=65535 L=2 v=2342
+  T=1 L=0 v=
+  T=123 L=256 v=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  T=1001 L=1 v=11
+  T=1002 L=2 v=2222
+  T=1003 L=3 v=333333
+- peeking:
+  peek T=0
+  peek T=65535
+  peek T=1
+  peek T=123
+  peek T=1001
+  peek T=1002
+  peek T=1003
+  peek T=-ENOENT
+- decoding in reverse order:
+  T=1003 L=3 v=333333
+  T=1002 L=2 v=2222
+  T=1001 L=1 v=11
+  T=123 L=256 v=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  T=1 L=0 v=
+  T=65535 L=2 v=2342
+  T=0 L=2 v=2342
+- decoding every second tag:
+  T=65535 L=2 v=2342
+  T=123 L=256 v=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  T=1002 L=2 v=2222
+- enforcing order: without restart, a past tag is not parsed again:
+  osmo_gtlv_load_next_by_tag(0) rc=-ENOENT
+=== end: test_t16l16v[0]
+
+=== start: test_t16l16v[1]
+- encoded: 04 12 00 01 42 00 66 00 02 01 01 00 66 00 02 22 22 00 67 00 01 11 00 67 00 02 22 22 00 67 00 03 33 33 33 03 ff 00 01 23 04 12 00 08 66 6f 72 74 79 74 77 6f 03 ff 00 0b 74 77 65 6e 74 79 74 68 72 65 65 .
+- decoding:
+  T=1042 L=1 v=42
+  T=102 L=2 v=0101
+  T=102 L=2 v=2222
+  T=103 L=1 v=11
+  T=103 L=2 v=2222
+  T=103 L=3 v=333333
+  T=1023 L=1 v=23
+  T=1042 L=8 v=666f72747974776f
+  T=1023 L=11 v=7477656e74797468726565
+- peeking:
+  peek T=1042
+  peek T=102
+  peek T=102
+  peek T=103
+  peek T=103
+  peek T=103
+  peek T=1023
+  peek T=1042
+  peek T=1023
+  peek T=-ENOENT
+- decoding in reverse order:
+   (mismatch: T=1023 L=1 v=23, checking for another occurrence of T=1023)
+  T=1023 L=11 v=7477656e74797468726565
+   (mismatch: T=1042 L=1 v=42, checking for another occurrence of T=1042)
+  T=1042 L=8 v=666f72747974776f
+  T=1023 L=1 v=23
+   (mismatch: T=103 L=1 v=11, checking for another occurrence of T=103)
+   (mismatch: T=103 L=2 v=2222, checking for another occurrence of T=103)
+  T=103 L=3 v=333333
+   (mismatch: T=103 L=1 v=11, checking for another occurrence of T=103)
+  T=103 L=2 v=2222
+  T=103 L=1 v=11
+   (mismatch: T=102 L=2 v=0101, checking for another occurrence of T=102)
+  T=102 L=2 v=2222
+  T=102 L=2 v=0101
+  T=1042 L=1 v=42
+- decoding every second tag:
+  T=102 L=2 v=0101
+  T=103 L=1 v=11
+   (mismatch: T=103 L=2 v=2222, checking for another occurrence of T=103)
+  T=103 L=3 v=333333
+  T=1042 L=8 v=666f72747974776f
+- enforcing order: without restart, a past tag is not parsed again:
+  osmo_gtlv_load_next_by_tag(1042) rc=-ENOENT
+=== end: test_t16l16v[1]
+
+=== start: txlxv_tests[0]
+- encoded: 00 02 23 42 7f 02 23 42 80 01 02 23 42 ff ff 02 23 42 01 00 7b 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ea 07 22 22 eb 07 03 33 33 33 .
+- decoding:
+  T=0 L=2 v=2342
+  T=127 L=2 v=2342
+  T=128 L=2 v=2342
+  T=32767 L=2 v=2342
+  T=1 L=0 v=
+  T=123 L=256 v=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  T=1002 L=2 v=2222
+  T=1003 L=3 v=333333
+- peeking:
+  peek T=0
+  peek T=127
+  peek T=128
+  peek T=32767
+  peek T=1
+  peek T=123
+  peek T=1002
+  peek T=1003
+  peek T=-ENOENT
+- decoding in reverse order:
+  T=1003 L=3 v=333333
+  T=1002 L=2 v=2222
+  T=123 L=256 v=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  T=1 L=0 v=
+  T=32767 L=2 v=2342
+  T=128 L=2 v=2342
+  T=127 L=2 v=2342
+  T=0 L=2 v=2342
+- decoding every second tag:
+  T=127 L=2 v=2342
+  T=32767 L=2 v=2342
+  T=123 L=256 v=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  T=1003 L=3 v=333333
+- enforcing order: without restart, a past tag is not parsed again:
+  osmo_gtlv_load_next_by_tag(0) rc=-ENOENT
+=== end: txlxv_tests[0]
+
+=== start: txlxv_tests[1]
+- encoded: 92 08 01 42 ea 07 01 01 ea 07 22 22 67 01 11 67 02 22 22 67 03 33 33 33 ff 07 01 23 92 08 08 66 6f 72 74 79 74 77 6f ff 07 0b 74 77 65 6e 74 79 74 68 72 65 65 .
+- decoding:
+  T=1042 L=1 v=42
+  T=1002 L=2 v=0101
+  T=1002 L=2 v=2222
+  T=103 L=1 v=11
+  T=103 L=2 v=2222
+  T=103 L=3 v=333333
+  T=1023 L=1 v=23
+  T=1042 L=8 v=666f72747974776f
+  T=1023 L=11 v=7477656e74797468726565
+- peeking:
+  peek T=1042
+  peek T=1002
+  peek T=1002
+  peek T=103
+  peek T=103
+  peek T=103
+  peek T=1023
+  peek T=1042
+  peek T=1023
+  peek T=-ENOENT
+- decoding in reverse order:
+   (mismatch: T=1023 L=1 v=23, checking for another occurrence of T=1023)
+  T=1023 L=11 v=7477656e74797468726565
+   (mismatch: T=1042 L=1 v=42, checking for another occurrence of T=1042)
+  T=1042 L=8 v=666f72747974776f
+  T=1023 L=1 v=23
+   (mismatch: T=103 L=1 v=11, checking for another occurrence of T=103)
+   (mismatch: T=103 L=2 v=2222, checking for another occurrence of T=103)
+  T=103 L=3 v=333333
+   (mismatch: T=103 L=1 v=11, checking for another occurrence of T=103)
+  T=103 L=2 v=2222
+  T=103 L=1 v=11
+   (mismatch: T=1002 L=2 v=0101, checking for another occurrence of T=1002)
+  T=1002 L=2 v=2222
+  T=1002 L=2 v=0101
+  T=1042 L=1 v=42
+- decoding every second tag:
+  T=1002 L=2 v=0101
+  T=103 L=1 v=11
+   (mismatch: T=103 L=2 v=2222, checking for another occurrence of T=103)
+  T=103 L=3 v=333333
+  T=1042 L=8 v=666f72747974776f
+- enforcing order: without restart, a past tag is not parsed again:
+  osmo_gtlv_load_next_by_tag(1042) rc=-ENOENT
+=== end: txlxv_tests[1]

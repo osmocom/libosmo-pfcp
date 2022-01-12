@@ -87,11 +87,14 @@ AM_CONFIG_HEADER(config.h)
 AC_OUTPUT(
     include/Makefile
     include/osmocom/Makefile
+    include/osmocom/gtlv/Makefile
     include/osmocom/pfcp/Makefile
     src/Makefile
+    src/libosmo-gtlv/Makefile
     src/libosmo-pfcp/Makefile
     tests/Makefile
     tests/atlocal
+    tests/libosmo-gtlv/Makefile
     doc/Makefile
     contrib/Makefile
     Makefile)
