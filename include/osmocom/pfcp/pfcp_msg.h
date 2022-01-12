@@ -147,6 +147,9 @@ struct osmo_pfcp_msg {
 		osmo_pfcp_resp_cb resp_cb;
 		void *priv;
 	} ctx;
+
+	/* When a message gets encoded, the encoded packet is cached here for possible retransmissions. */
+	struct msgb *encoded;
 };
 
 /* Given a &osmo_pfcp_msg->ies pointer, return the &osmo_pfcp_msg.

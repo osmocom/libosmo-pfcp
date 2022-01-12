@@ -1,4 +1,5 @@
 pfcp_HEADERS = \
+	pfcp_endpoint.h \
 	pfcp_ies_custom.h \
 	pfcp_ies_auto.h \
 	pfcp_msg.h \
