@@ -249,7 +249,7 @@ static void write_extern_dec_enc(const struct osmo_gtlv_gen_ie_o *ies)
 }
 
 /* For a nested IE, write the struct osmo_gtlv_coding array of the inner IEs.
- * { MYPROTO_IEI_BAR,
+ * { { MYPROTO_IEI_BAR },
  *   .memb_ofs = offsetof(struct myproto_foo, bar),
  *   .dec_func = myproto_dec_bar,
  *   .enc_func = myproto_enc_bar,
@@ -263,10 +263,13 @@ static void write_ies_array(const char *indent, const struct osmo_gtlv_gen_ie_o 
 	for (ie_o = ies; ie_o->ie; ie_o++) {
 		const struct osmo_gtlv_gen_ie *ie = ie_o->ie;
 		const char *tag_name = (ie && ie->tag_name) ? ie->tag_name : ie_o->name;
-		printi("{ %s%s,\n", g_cfg->tag_prefix, osmo_str_toupper(tag_name));
+		printi("{ { %s%s", g_cfg->tag_prefix, osmo_str_toupper(tag_name));
+		if (ie_o->instance)
+			printf(", true, %s", ie_o->instance);
+		printf(" },\n");
 		printi("  .memb_ofs = offsetof(%s, %s%s),\n", obj_type, substruct, ie_o->name);
-		if (ie && ie->nested_ies) {
-			printi("  .nested_ies = ies_in_%s,\n", ie->tag_name ? : ie_o->name);
+		if (ie->nested_ies) {
+			printi("  .nested_ies = ies_in_%s,\n", tag_name);
 		} else {
 			const char *dec_enc = ie->dec_enc ? : (ie->tag_name ? : ie_o->name);
 			printi("  .dec_func = %s_dec_%s,\n", g_cfg->proto_name, dec_enc);
@@ -291,7 +294,7 @@ static void write_ies_array(const char *indent, const struct osmo_gtlv_gen_ie_o 
 
 /* For a nested IE, write the struct osmo_gtlv_coding array of the inner IEs.
  * static const struct osmo_gtlv_coding ies_in_foo[] = {
- *         { MYPROTO_IEI_BAR,
+ *         { {MYPROTO_IEI_BAR},
  *           .memb_ofs = offsetof(struct myproto_foo, bar),
  *           .dec_func = myproto_dec_bar,
  *           .enc_func = myproto_enc_bar,

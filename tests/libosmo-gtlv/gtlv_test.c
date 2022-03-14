@@ -33,7 +33,7 @@
 void *ctx;
 
 struct ie {
-	int tag;
+	struct osmo_gtlv_tag_inst ti;
 	const char *val;
 };
 
@@ -48,7 +48,7 @@ struct msgb *test_tlv_enc(const struct osmo_gtlv_cfg *cfg, const struct ie *ies)
 
 	for (ie = ies; ie->val; ie++) {
 		/* put header without knowing length yet */
-		OSMO_ASSERT(osmo_gtlv_put_tl(&gtlv, ie->tag, 0) == 0);
+		OSMO_ASSERT(osmo_gtlv_put_tli(&gtlv, &ie->ti, 0) == 0);
 		/* put value data, as much as desired */
 		msgb_put(gtlv.dst, osmo_hexparse(ie->val, gtlv.dst->tail, msgb_tailroom(gtlv.dst)));
 		/* update header len from amount of written data */
@@ -80,9 +80,10 @@ void test_tlv_dec(const struct osmo_gtlv_cfg *cfg, const struct ie *ies, struct 
 		/* end of TLV structure? */
 		if (!gtlv.val)
 			break;
-		printf("  T=%d L=%zu v=%s\n", gtlv.tag, gtlv.len, osmo_hexdump_nospc(gtlv.val, gtlv.len));
-		if (gtlv.tag != ie->tag) {
-			printf("  ERROR loading TLV structure: expected tag %d, got tag %d\n", ie->tag, gtlv.tag);
+		printf("  T=%s L=%zu", osmo_gtlv_tag_inst_to_str_c(ctx, &gtlv.ti, NULL), gtlv.len);
+		printf(" v=%s\n", osmo_hexdump_nospc(gtlv.val, gtlv.len));
+		if (gtlv.ti.tag != ie->ti.tag) {
+			printf("  ERROR loading TLV structure: expected tag %u, got tag %u\n", ie->ti.tag, gtlv.ti.tag);
 			exit(1);
 		}
 		if (strcmp(ie->val, osmo_hexdump_nospc(gtlv.val, gtlv.len))) {
@@ -107,22 +108,28 @@ void test_tlv_peek(const struct osmo_gtlv_cfg *cfg, const struct ie *ies, struct
 	ie = ies;
 	while (1) {
 		int rc;
-		int next_tag = osmo_gtlv_load_peek_tag(&gtlv);
-		if (next_tag == -ENOENT)
-			printf("  peek T=-ENOENT\n");
-		else
-			printf("  peek T=%d\n", next_tag);
-
-		if (ie->val && next_tag != ie->tag) {
-			printf("  ERROR peeking tag: expected tag %d, got tag %d\n", ie->tag, next_tag);
-			exit(1);
-		}
-		if (!ie->val && next_tag != -ENOENT) {
-			printf("  ERROR peeking tag: expected -ENOENT, got tag %d\n", next_tag);
-			exit(1);
+		struct osmo_gtlv_tag_inst next_tag;
+		rc = osmo_gtlv_load_peek_tag(&gtlv, &next_tag);
+		if (rc == -ENOENT) {
+			printf("  peek rc=-ENOENT\n");
+		} else {
+			printf("  peek T=%s", osmo_gtlv_tag_inst_to_str_c(ctx, &next_tag, NULL));
+			printf("\n");
 		}
 
-		if (next_tag == -ENOENT)
+		if (ie->val && osmo_gtlv_tag_inst_cmp(&next_tag, &ie->ti)) {
+			printf("  ERROR peeking tag: expected tag %s, got tag %s\n",
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &ie->ti, NULL),
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &next_tag, NULL));
+			exit(1);
+		}
+		if (!ie->val && rc != -ENOENT) {
+			printf("  ERROR peeking tag: expected -ENOENT, got rc=%d, tag %s\n", rc,
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &next_tag, NULL));
+			exit(1);
+		}
+
+		if (rc == -ENOENT)
 			break;
 
 		/* go to the next TLV */
@@ -156,25 +163,32 @@ void test_tlv_dec_by_tag(const struct osmo_gtlv_cfg *cfg, const struct ie *ies, 
 	for (ie = last_ie; ie >= ies; ie--) {
 		/* each time, look from the beginning */
 		osmo_gtlv_load_start(&gtlv);
-		rc = osmo_gtlv_load_next_by_tag(&gtlv, ie->tag);
+		rc = osmo_gtlv_load_next_by_tag_inst(&gtlv, &ie->ti);
 		if (rc) {
-			printf("  ERROR loading TLV structure: osmo_gtlv_load_next_by_tag(%d) rc = %d\n", ie->tag, rc);
+			printf("  ERROR loading TLV structure: osmo_gtlv_load_next_by_tag_inst(%s) rc = %d\n",
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &ie->ti, NULL), rc);
 			exit(1);
 		}
 		if (!gtlv.val) {
-			printf("  ERROR loading TLV structure: osmo_gtlv_load_next_by_tag(%d) returned NULL val\n",
-			       ie->tag);
+			printf("  ERROR loading TLV structure: osmo_gtlv_load_next_by_tag_inst(%s) returned NULL val\n",
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &ie->ti, NULL));
 			exit(1);
 		}
-		if (gtlv.tag != ie->tag) {
-			printf("  ERROR loading TLV structure: expected tag %d, got tag %d\n", ie->tag, gtlv.tag);
+		if (osmo_gtlv_tag_inst_cmp(&gtlv.ti, &ie->ti)) {
+			printf("  ERROR loading TLV structure: expected tag %s, got tag %s\n",
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &ie->ti, NULL),
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &gtlv.ti, NULL));
 			exit(1);
 		}
 		if (strcmp(ie->val, osmo_hexdump_nospc(gtlv.val, gtlv.len))) {
 			while (1) {
-				printf("   (mismatch: T=%d L=%zu v=%s, checking for another occurrence of T=%d)\n",
-				       gtlv.tag, gtlv.len, osmo_hexdump_nospc(gtlv.val, gtlv.len), gtlv.tag);
-				rc = osmo_gtlv_load_next_by_tag(&gtlv, ie->tag);
+				printf("   (mismatch: T=%s L=%zu v=%s, checking for another occurrence of T=%s)\n",
+				       osmo_gtlv_tag_inst_to_str_c(ctx, &gtlv.ti, NULL),
+				       gtlv.len,
+				       osmo_hexdump_nospc(gtlv.val, gtlv.len),
+				       osmo_gtlv_tag_inst_to_str_c(ctx, &gtlv.ti, NULL));
+
+				rc = osmo_gtlv_load_next_by_tag_inst(&gtlv, &ie->ti);
 				if (rc || !gtlv.val) {
 					printf("  ERROR val not found\n");
 					exit(1);
@@ -184,7 +198,9 @@ void test_tlv_dec_by_tag(const struct osmo_gtlv_cfg *cfg, const struct ie *ies, 
 				}
 			}
 		}
-		printf("  T=%d L=%zu v=%s\n", gtlv.tag, gtlv.len, osmo_hexdump_nospc(gtlv.val, gtlv.len));
+		printf("  T=%s L=%zu v=%s\n",
+		       osmo_gtlv_tag_inst_to_str_c(ctx, &gtlv.ti, NULL),
+		       gtlv.len, osmo_hexdump_nospc(gtlv.val, gtlv.len));
 	}
 
 	printf("- decoding every second tag:\n");
@@ -196,25 +212,32 @@ void test_tlv_dec_by_tag(const struct osmo_gtlv_cfg *cfg, const struct ie *ies, 
 		if (!ie->val)
 			break;
 
-		rc = osmo_gtlv_load_next_by_tag(&gtlv, ie->tag);
+		rc = osmo_gtlv_load_next_by_tag_inst(&gtlv, &ie->ti);
 		if (rc) {
-			printf("  ERROR loading TLV structure: osmo_gtlv_load_next_by_tag(%d) rc = %d\n", ie->tag, rc);
+			printf("  ERROR loading TLV structure: osmo_gtlv_load_next_by_tag_inst(%s) rc = %d\n",
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &ie->ti, NULL), rc);
 			exit(1);
 		}
 		if (!gtlv.val) {
-			printf("  ERROR loading TLV structure: osmo_gtlv_load_next_by_tag(%d) returned NULL val\n",
-			       ie->tag);
+			printf("  ERROR loading TLV structure: osmo_gtlv_load_next_by_tag_inst(%s) returned NULL val\n",
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &ie->ti, NULL));
 			exit(1);
 		}
-		if (gtlv.tag != ie->tag) {
-			printf("  ERROR loading TLV structure: expected tag %d, got tag %d\n", ie->tag, gtlv.tag);
+		if (osmo_gtlv_tag_inst_cmp(&gtlv.ti, &ie->ti)) {
+			printf("  ERROR loading TLV structure: expected tag %s, got tag %s\n",
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &ie->ti, NULL),
+			       osmo_gtlv_tag_inst_to_str_c(ctx, &gtlv.ti, NULL));
 			exit(1);
 		}
 		if (strcmp(ie->val, osmo_hexdump_nospc(gtlv.val, gtlv.len))) {
 			while (1) {
-				printf("   (mismatch: T=%d L=%zu v=%s, checking for another occurrence of T=%d)\n",
-				       gtlv.tag, gtlv.len, osmo_hexdump_nospc(gtlv.val, gtlv.len), gtlv.tag);
-				rc = osmo_gtlv_load_next_by_tag(&gtlv, ie->tag);
+				printf("   (mismatch: T=%s L=%zu v=%s, checking for another occurrence of T=%s)\n",
+				       osmo_gtlv_tag_inst_to_str_c(ctx, &gtlv.ti, NULL),
+				       gtlv.len,
+				       osmo_hexdump_nospc(gtlv.val, gtlv.len),
+				       osmo_gtlv_tag_inst_to_str_c(ctx, &gtlv.ti, NULL));
+
+				rc = osmo_gtlv_load_next_by_tag_inst(&gtlv, &ie->ti);
 				if (rc || !gtlv.val) {
 					printf("  ERROR val not found\n");
 					exit(1);
@@ -224,14 +247,16 @@ void test_tlv_dec_by_tag(const struct osmo_gtlv_cfg *cfg, const struct ie *ies, 
 				}
 			}
 		}
-		printf("  T=%d L=%zu v=%s\n", gtlv.tag, gtlv.len, osmo_hexdump_nospc(gtlv.val, gtlv.len));
+		printf("  T=%s L=%zu v=%s\n",
+		       osmo_gtlv_tag_inst_to_str_c(ctx, &gtlv.ti, NULL),
+		       gtlv.len, osmo_hexdump_nospc(gtlv.val, gtlv.len));
 	}
 
 	printf("- enforcing order: without restart, a past tag is not parsed again:\n");
 	/* Try to read the first tag, expect that it isn't found because we're already halfway in the message data */
 	ie = ies;
-	rc = osmo_gtlv_load_next_by_tag(&gtlv, ie->tag);
-	printf("  osmo_gtlv_load_next_by_tag(%d) rc=", ie->tag);
+	rc = osmo_gtlv_load_next_by_tag_inst(&gtlv, &ie->ti);
+	printf("  osmo_gtlv_load_next_by_tag_inst(%s) rc=", osmo_gtlv_tag_inst_to_str_c(ctx, &ie->ti, NULL));
 	if (rc == -ENOENT) {
 		printf("-ENOENT\n");
 	} else {
@@ -262,14 +287,14 @@ void test_tlv(const char *label, struct ie *tests[], size_t tests_len, const str
 
 struct ie t8l8v_test1[] = {
 	/* smallest T */
-	{ 0, "2342" },
+	{ {}, "2342" },
 	/* largest T */
-	{ 255, "2342" },
+	{ {255}, "2342" },
 
 	/* smallest V (no V data) */
-	{ 1, "" },
+	{ {1}, "" },
 	/* largest V, 255 bytes is the largest that an 8bit size length can express. */
-	{ 123, "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+	{ {123}, "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 	       "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 	       "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 	       "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -280,22 +305,22 @@ struct ie t8l8v_test1[] = {
 	},
 
 	/* arbitrary test data */
-	{ 101, "11" },
-	{ 102, "2222" },
-	{ 103, "333333" },
+	{ {101}, "11" },
+	{ {102}, "2222" },
+	{ {103}, "333333" },
 	{}
 };
 
 struct ie t8l8v_test_multi[] = {
-	{ 42, "42" },
-	{ 2, "0101" },
-	{ 2, "2222" },
-	{ 3, "11" },
-	{ 3, "2222" },
-	{ 3, "333333" },
-	{ 23, "23" },
-	{ 42, "666f72747974776f" },
-	{ 23, "7477656e74797468726565" },
+	{ {42}, "42" },
+	{ {2}, "0101" },
+	{ {2}, "2222" },
+	{ {3}, "11" },
+	{ {3}, "2222" },
+	{ {3}, "333333" },
+	{ {23}, "23" },
+	{ {42}, "666f72747974776f" },
+	{ {23}, "7477656e74797468726565" },
 	{}
 };
 
@@ -311,14 +336,14 @@ void test_t8l8v()
 
 struct ie t16l16v_test1[] = {
 	/* smallest T */
-	{ 0, "2342" },
+	{ {}, "2342" },
 	/* largest T */
-	{ 65535, "2342" },
+	{ {65535}, "2342" },
 
 	/* smallest V (no V data) */
-	{ 1, "" },
+	{ {1}, "" },
 	/* 256 bytes is one more than an 8bit size length can express. */
-	{ 123, "0000000000000000000000000000000000000000000000000000000000000000"
+	{ {123}, "0000000000000000000000000000000000000000000000000000000000000000"
 	       "0000000000000000000000000000000000000000000000000000000000000000"
 	       "0000000000000000000000000000000000000000000000000000000000000000"
 	       "0000000000000000000000000000000000000000000000000000000000000000"
@@ -329,22 +354,22 @@ struct ie t16l16v_test1[] = {
 	},
 
 	/* arbitrary test data */
-	{ 1001, "11" },
-	{ 1002, "2222" },
-	{ 1003, "333333" },
+	{ {1001}, "11" },
+	{ {1002}, "2222" },
+	{ {1003}, "333333" },
 	{}
 };
 
 struct ie t16l16v_test_multi[] = {
-	{ 1042, "42" },
-	{ 102, "0101" },
-	{ 102, "2222" },
-	{ 103, "11" },
-	{ 103, "2222" },
-	{ 103, "333333" },
-	{ 1023, "23" },
-	{ 1042, "666f72747974776f" },
-	{ 1023, "7477656e74797468726565" },
+	{ {1042}, "42" },
+	{ {102}, "0101" },
+	{ {102}, "2222" },
+	{ {103}, "11" },
+	{ {103}, "2222" },
+	{ {103}, "333333" },
+	{ {1023}, "23" },
+	{ {1042}, "666f72747974776f" },
+	{ {1023}, "7477656e74797468726565" },
 	{}
 };
 
@@ -360,18 +385,18 @@ void test_t16l16v()
 
 struct ie txlxv_test1[] = {
 	/* smallest T */
-	{ 0, "2342" },
+	{ {}, "2342" },
 	/* largest T that still fits in one encoded octet (highest bit serves as flag) */
-	{ 0x7f, "2342" },
+	{ {0x7f}, "2342" },
 	/* smallest T that needs two octets to be encoded (first octet = 0x80 flag + 0, second octet = 0x1) */
-	{ 0x80, "2342" },
+	{ {0x80}, "2342" },
 	/* largest T that can be encoded in 16bit - one flag bit. */
-	{ 0x7fff, "2342" },
+	{ {0x7fff}, "2342" },
 
 	/* smallest V (no V data) */
-	{ 1, "" },
+	{ {1}, "" },
 	/* 256 bytes is one more than an 8bit size length can express. */
-	{ 123, "0000000000000000000000000000000000000000000000000000000000000000"
+	{ {123}, "0000000000000000000000000000000000000000000000000000000000000000"
 	       "0000000000000000000000000000000000000000000000000000000000000000"
 	       "0000000000000000000000000000000000000000000000000000000000000000"
 	       "0000000000000000000000000000000000000000000000000000000000000000"
@@ -382,21 +407,21 @@ struct ie txlxv_test1[] = {
 	},
 
 	/* arbitrary test data */
-	{ 1002, "2222" },
-	{ 1003, "333333" },
+	{ {1002}, "2222" },
+	{ {1003}, "333333" },
 	{}
 };
 
 struct ie txlxv_test_multi[] = {
-	{ 1042, "42" },
-	{ 1002, "0101" },
-	{ 1002, "2222" },
-	{ 103, "11" },
-	{ 103, "2222" },
-	{ 103, "333333" },
-	{ 1023, "23" },
-	{ 1042, "666f72747974776f" },
-	{ 1023, "7477656e74797468726565" },
+	{ {1042}, "42" },
+	{ {1002}, "0101" },
+	{ {1002}, "2222" },
+	{ {103}, "11" },
+	{ {103}, "2222" },
+	{ {103}, "333333" },
+	{ {1023}, "23" },
+	{ {1042}, "666f72747974776f" },
+	{ {1023}, "7477656e74797468726565" },
 	{}
 };
 
@@ -413,14 +438,14 @@ int txlxv_load_tl(struct osmo_gtlv_load *gtlv, const uint8_t *src_data, size_t s
 	if (pos[0] & 0x80) {
 		if (pos + 2 > end)
 			return -EINVAL;
-		gtlv->tag = (((int)pos[1]) << 7) + (pos[0] & 0x7f);
+		gtlv->ti.tag = (((int)pos[1]) << 7) + (pos[0] & 0x7f);
 		pos += 2;
 	} else {
-		gtlv->tag = pos[0];
+		gtlv->ti.tag = pos[0];
 		pos++;
 	}
 
-	switch (gtlv->tag) {
+	switch (gtlv->ti.tag) {
 	case 1002:
 		/* fixed-length IE */
 		gtlv->len = 2;
@@ -445,10 +470,12 @@ int txlxv_load_tl(struct osmo_gtlv_load *gtlv, const uint8_t *src_data, size_t s
 }
 
 /* Example of defining a variable TL, where size of T and L depend on the actual tag and length values: store. */
-int txlxv_store_tl(uint8_t *dst_data, size_t dst_data_avail, unsigned int tag, size_t len, struct osmo_gtlv_put *gtlv)
+int txlxv_store_tl(uint8_t *dst_data, size_t dst_data_avail, const struct osmo_gtlv_tag_inst *ti, size_t len,
+		   struct osmo_gtlv_put *gtlv)
 {
 	uint8_t *pos = dst_data;
 	uint8_t *end = dst_data + dst_data_avail;
+	unsigned int tag = ti->tag;
 	if (tag < 0x80) {
 		if (pos + 1 > end)
 			return -ENOSPC;
@@ -496,7 +523,95 @@ const struct osmo_gtlv_cfg txlxv_cfg = {
 
 void test_txlxv()
 {
-	test_tlv("txlxv_tests", txlxv_tests, ARRAY_SIZE(txlxv_tests), &txlxv_cfg);
+	test_tlv(__func__, txlxv_tests, ARRAY_SIZE(txlxv_tests), &txlxv_cfg);
+}
+
+/* Example of defining a TLI, with an instance indicator */
+static int tliv_load_tl(struct osmo_gtlv_load *gtlv, const uint8_t *src_data, size_t src_data_len)
+{
+	/* already validated in next_tl_valid(): src_data_len >= cfg->tl_min_size == 2. */
+	gtlv->ti.tag = src_data[0];
+	gtlv->len = src_data[1];
+
+	switch (gtlv->ti.tag) {
+	/* All tags that are TLIV go here */
+	case 5:
+	case 7:
+	case 9:
+		if (src_data_len < 3)
+			return -ENOSPC;
+		gtlv->ti.instance_present = true;
+		gtlv->ti.instance = src_data[2];
+		gtlv->val = src_data + 3;
+		return 0;
+	default:
+		gtlv->val = src_data + 2;
+		return 0;
+	}
+}
+
+static int tliv_store_tl(uint8_t *dst_data, size_t dst_data_avail, const struct osmo_gtlv_tag_inst *ti, size_t len,
+			 struct osmo_gtlv_put *gtlv)
+{
+	if (ti->tag > UINT8_MAX)
+		return -EINVAL;
+	if (len > UINT8_MAX)
+		return -EMSGSIZE;
+	if (dst_data_avail < 2)
+		return -ENOSPC;
+
+	dst_data[0] = ti->tag;
+	dst_data[1] = len;
+
+	switch (ti->tag) {
+	/* All tags that are TLIV go here */
+	case 5:
+	case 7:
+	case 9:
+		if (dst_data_avail < 3)
+			return -ENOSPC;
+		if (!ti->instance_present)
+			return -EINVAL;
+		if (ti->instance > UINT8_MAX)
+			return -EINVAL;
+		dst_data[2] = ti->instance;
+		return 3;
+	default:
+		return 2;
+	}
+}
+
+const struct osmo_gtlv_cfg osmo_tliv_cfg = {
+	.tl_min_size = 2,
+	.load_tl = tliv_load_tl,
+	.store_tl = tliv_store_tl,
+};
+
+struct ie tliv_test1[] = {
+	/* TLV */
+	{ {1}, "0002" },
+	/* TLIV */
+	{ {5, true, 1}, "0017" },
+	/* TLIV */
+	{ {5, true, 2}, "0018" },
+	/* TLIV */
+	{ {5, true, 3}, "0019" },
+	/* TLV */
+	{ {6}, "001a" },
+	/* TLIV */
+	{ {7, true, 1}, "001b" },
+	/* TLIV */
+	{ {9, true, 1}, "001c" },
+	{}
+};
+
+struct ie *tliv_tests[] = {
+	tliv_test1,
+};
+
+void test_tliv()
+{
+	test_tlv(__func__, tliv_tests, ARRAY_SIZE(tliv_tests), &osmo_tliv_cfg);
 }
 
 int main()
@@ -507,6 +622,7 @@ int main()
 	test_t8l8v();
 	test_t16l16v();
 	test_txlxv();
+	test_tliv();
 
 	talloc_free(ctx);
 	return 0;

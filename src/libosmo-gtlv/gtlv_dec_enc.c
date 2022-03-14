@@ -31,12 +31,21 @@
 /* Reverse offsetof(): return the address of the struct member for a given osmo_gtlv_msg and member ofs_foo value. */
 #define MEMB(M, MEMB_OFS) ((void *)((char *)(M) + (MEMB_OFS)))
 
-#define RETURN_ERROR(RC, IEI, FMT, ARGS...) \
+#define RETURN_ERROR(RC, TAG_INST, FMT, ARGS...) \
 	do {\
-		if (err_cb) \
-			err_cb(err_cb_data, (void *)decoded_struct, __FILE__, __LINE__, \
-			       "IE '%s' (0x%x): " FMT " (%d: %s)\n", \
-			       get_value_string(iei_strs, IEI), IEI, ##ARGS, RC, strerror((RC) > 0 ? (RC) : -(RC))); \
+		if (err_cb) { \
+			if ((TAG_INST).instance_present) \
+				err_cb(err_cb_data, (void *)decoded_struct, __FILE__, __LINE__, \
+				       "tag 0x%x = %s instance %u: " FMT " (%d: %s)\n", \
+				       (TAG_INST).tag, get_value_string(iei_strs, (TAG_INST).tag), \
+				       (TAG_INST).instance, ##ARGS, \
+				       RC, strerror((RC) > 0 ? (RC) : -(RC))); \
+			else \
+				err_cb(err_cb_data, (void *)decoded_struct, __FILE__, __LINE__, \
+				       "tag 0x%x = %s: " FMT " (%d: %s)\n", \
+				       (TAG_INST).tag, get_value_string(iei_strs, (TAG_INST).tag), ##ARGS, \
+				       RC, strerror((RC) > 0 ? (RC) : -(RC))); \
+		} \
 		return RC; \
 	} while (0)
 
@@ -72,7 +81,7 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, unsigned int obj_of
 #define CHECK_SEEN(IEC) do { \
 			unsigned int ie_coding_idx = (IEC) - ie_coding; \
 			if (ie_coding_idx >= ARRAY_SIZE(seen_ie_coding_entries)) \
-				RETURN_ERROR(-ENOTSUP, gtlv->tag, \
+				RETURN_ERROR(-ENOTSUP, gtlv->ti, \
 					     "Too many IE definitions for decoding an unordered TLV structure"); \
 			seen_p = &seen_ie_coding_entries[ie_coding_idx]; \
 		} while (0)
@@ -91,7 +100,7 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, unsigned int obj_of
 
 		rc = osmo_gtlv_load_next(gtlv);
 		if (rc)
-			RETURN_ERROR(rc, gtlv->tag, "Decoding IEs failed on or after this tag");
+			RETURN_ERROR(rc, gtlv->ti, "Decoding IEs failed on or after this tag");
 		if (!gtlv->val) {
 			/* End of the TLV structure */
 			break;
@@ -103,7 +112,9 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, unsigned int obj_of
 
 		do {
 			/* Find the IE coding for this tag */
-			for (iec = ie_coding; !osmo_gtlv_coding_end(iec) && iec->tag != gtlv->tag; iec++);
+			for (iec = ie_coding;
+			     !osmo_gtlv_coding_end(iec) && osmo_gtlv_tag_inst_cmp(&iec->ti, &gtlv->ti);
+			     iec++);
 			/* No such IE coding found. */
 			if (osmo_gtlv_coding_end(iec))
 				break;
@@ -128,7 +139,7 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, unsigned int obj_of
 			if (ie_max_allowed_count) {
 				/* There have been IE definitions for this IEI, but all slots to decode it are already
 				 * filled. */
-				RETURN_ERROR(-ENOTSUP, gtlv->tag, "Only %u instances of this IE are supported per message",
+				RETURN_ERROR(-ENOTSUP, gtlv->ti, "Only %u instances of this IE are supported per message",
 					     ie_max_allowed_count);
 			}
 			/* No such IE defined in ie_coding, just skip the TLV. */
@@ -166,14 +177,14 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, unsigned int obj_of
 			rc = osmo_gtlvs_decode(decoded_struct, obj_ofs + memb_ofs, &inner_tlv, ordered, iec->nested_ies,
 					      err_cb, err_cb_data, iei_strs);
 			if (rc)
-				RETURN_ERROR(rc, gtlv->tag, "Error while decoding TLV structure nested inside this IE");
+				RETURN_ERROR(rc, gtlv->ti, "Error while decoding TLV structure nested inside this IE");
 		} else {
 			/* Normal IE, decode the specific IE data. */
 			if (!iec->dec_func)
-				RETURN_ERROR(-EIO, gtlv->tag, "IE definition lacks a dec_func()");
+				RETURN_ERROR(-EIO, gtlv->ti, "IE definition lacks a dec_func()");
 			rc = iec->dec_func(decoded_struct, MEMB(obj, memb_ofs), gtlv);
 			if (rc)
-				RETURN_ERROR(rc, gtlv->tag, "Error while decoding this IE");
+				RETURN_ERROR(rc, gtlv->ti, "Error while decoding this IE");
 		}
 
 		if (multi_count_p) {
@@ -197,14 +208,14 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, unsigned int obj_of
 		multi_count_p = iec->has_count ? MEMB(obj, iec->count_ofs) : NULL;
 		if (multi_count_p) {
 			if (*multi_count_p < iec->count_mandatory)
-				RETURN_ERROR(-EINVAL, iec->tag, "Error while decoding: %u instances of this IE are mandatory, got %u",
+				RETURN_ERROR(-EINVAL, iec->ti, "%u instances of this IE are mandatory, got %u",
 					     iec->count_mandatory, *multi_count_p);
 			continue;
 		}
 		/* Neither an optional nor a multi member, hence it must be mandatory. */
 		CHECK_SEEN(iec);
 		if (!*seen_p)
-			RETURN_ERROR(-EINVAL, iec->tag, "Missing mandatory IE");
+			RETURN_ERROR(-EINVAL, iec->ti, "Missing mandatory IE");
 	}
 	return 0;
 }
@@ -235,19 +246,20 @@ static int osmo_gtlvs_decode_ordered(void *decoded_struct, unsigned int obj_ofs,
 		int rc;
 		bool *presence_flag = ie_coding->has_presence_flag ? MEMB(obj, ie_coding->presence_flag_ofs) : NULL;
 		unsigned int *multi_count = ie_coding->has_count ? MEMB(obj, ie_coding->count_ofs) : NULL;
+		struct osmo_gtlv_tag_inst peek_ti;
 
-		rc = osmo_gtlv_load_next_by_tag(gtlv, ie_coding->tag);
+		rc = osmo_gtlv_load_next_by_tag_inst(gtlv, &ie_coding->ti);
 		switch (rc) {
 		case 0:
 			break;
 		case -ENOENT:
 			if (!presence_flag && (!multi_count || *multi_count < ie_coding->count_mandatory))
-				RETURN_ERROR(rc, ie_coding->tag, "Missing mandatory IE");
+				RETURN_ERROR(rc, ie_coding->ti, "Missing mandatory IE");
 			if (presence_flag)
 				*presence_flag = false;
 			continue;
 		default:
-			RETURN_ERROR(rc, ie_coding->tag, "Error in TLV structure");
+			RETURN_ERROR(rc, ie_coding->ti, "Error in TLV structure");
 		}
 
 		for (;;) {
@@ -257,7 +269,7 @@ static int osmo_gtlvs_decode_ordered(void *decoded_struct, unsigned int obj_ofs,
 			unsigned int memb_ofs = ie_coding->memb_ofs + memb_next_array_idx * ie_coding->memb_array_pitch;
 
 			if (multi_count && memb_next_array_idx >= ie_coding->count_max)
-				RETURN_ERROR(-ENOTSUP, ie_coding->tag, "Only %u instances of this IE are supported per message",
+				RETURN_ERROR(-ENOTSUP, ie_coding->ti, "Only %u instances of this IE are supported per message",
 					     ie_coding->count_max);
 
 			/* Decode IE value part */
@@ -286,15 +298,15 @@ static int osmo_gtlvs_decode_ordered(void *decoded_struct, unsigned int obj_ofs,
 				rc = osmo_gtlvs_decode(decoded_struct, obj_ofs + memb_ofs, &inner_tlv, ordered,
 						      ie_coding->nested_ies, err_cb, err_cb_data, iei_strs);
 				if (rc)
-					RETURN_ERROR(rc, ie_coding->tag,
+					RETURN_ERROR(rc, ie_coding->ti,
 						     "Error while decoding TLV structure nested inside this IE");
 			} else {
 				/* Normal IE, decode the specific IE data. */
 				if (!ie_coding->dec_func)
-					RETURN_ERROR(-EIO, ie_coding->tag, "IE definition lacks a dec_func()");
+					RETURN_ERROR(-EIO, ie_coding->ti, "IE definition lacks a dec_func()");
 				rc = ie_coding->dec_func(decoded_struct, MEMB(obj, memb_ofs), gtlv);
 				if (rc)
-					RETURN_ERROR(rc, ie_coding->tag, "Error while decoding this IE");
+					RETURN_ERROR(rc, ie_coding->ti, "Error while decoding this IE");
 			}
 
 			if (presence_flag)
@@ -312,7 +324,8 @@ static int osmo_gtlvs_decode_ordered(void *decoded_struct, unsigned int obj_ofs,
 			(*multi_count)++;
 
 			/* Does another one of these IEs follow? */
-			if (osmo_gtlv_load_peek_tag(gtlv) != gtlv->tag) {
+			if (osmo_gtlv_load_peek_tag(gtlv, &peek_ti)
+			    || osmo_gtlv_tag_inst_cmp(&peek_ti, &gtlv->ti)) {
 				/* Next tag is a different IE, end the repetition. */
 				break;
 			}
@@ -387,7 +400,7 @@ int osmo_gtlvs_encode(struct osmo_gtlv_put *gtlv, const void *decoded_struct, un
 		if (multi_count_p) {
 			n = *multi_count_p;
 			if (!ie_coding->memb_array_pitch)
-				RETURN_ERROR(-EFAULT, ie_coding->tag,
+				RETURN_ERROR(-EFAULT, ie_coding->ti,
 					     "Error in protocol definition: The ie_coding lacks a memb_array_pitch"
 					     " value, cannot be used as multi-IE\n");
 		} else {
@@ -397,11 +410,11 @@ int osmo_gtlvs_encode(struct osmo_gtlv_put *gtlv, const void *decoded_struct, un
 		for (i = 0; i < n; i++) {
 			unsigned int memb_ofs;
 
-			osmo_gtlv_put_tl(gtlv, ie_coding->tag, 0);
+			osmo_gtlv_put_tli(gtlv, &ie_coding->ti, 0);
 
 			/* If this is a repeated IE, encode from the correct array index */
 			if (multi_count_p && i >= ie_coding->count_max)
-				RETURN_ERROR(-ENOTSUP, ie_coding->tag,
+				RETURN_ERROR(-ENOTSUP, ie_coding->ti,
 					     "Only %u instances of this IE are supported per message", ie_coding->count_max);
 			memb_ofs = ie_coding->memb_ofs + i * ie_coding->memb_array_pitch;
 
@@ -413,12 +426,12 @@ int osmo_gtlvs_encode(struct osmo_gtlv_put *gtlv, const void *decoded_struct, un
 				rc = osmo_gtlvs_encode(&nested_tlv, decoded_struct, obj_ofs + memb_ofs,
 						      ie_coding->nested_ies, err_cb, err_cb_data, iei_strs);
 				if (rc)
-					RETURN_ERROR(rc, ie_coding->tag,
+					RETURN_ERROR(rc, ie_coding->ti,
 						     "Error while encoding TLV structure nested inside this IE");
 			} else {
 				rc = ie_coding->enc_func(gtlv, decoded_struct, MEMB(obj, memb_ofs));
 				if (rc)
-					RETURN_ERROR(rc, ie_coding->tag, "Error while encoding this IE");
+					RETURN_ERROR(rc, ie_coding->ti, "Error while encoding this IE");
 			}
 
 			osmo_gtlv_put_update_tl(gtlv);
@@ -467,7 +480,7 @@ int osmo_gtlvs_encode_to_str_buf(char *buf, size_t buflen, const void *decoded_s
 		if (!n)
 			continue;
 
-		OSMO_STRBUF_PRINTF(sb, " '%s'=", get_value_string(iei_strs, ie_coding->tag));
+		OSMO_STRBUF_PRINTF(sb, " '%s'=", get_value_string(iei_strs, ie_coding->ti.tag));
 		if (multi_count_p)
 			OSMO_STRBUF_PRINTF(sb, "{ ");
 

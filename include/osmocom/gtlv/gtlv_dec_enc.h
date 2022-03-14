@@ -78,8 +78,8 @@ enum osmo_gtlv_coding_nested_ies_ordered {
  * that the decoded structs to match the IEs are also generated at the same time and thus always match the message
  * definitions. For an example, see tests/libosmo-gtlv/test_gtlv_gen/. */
 struct osmo_gtlv_coding {
-	/*! the IEI value */
-	unsigned int tag;
+	/*! the IEI discriminator, and optional instance number */
+	struct osmo_gtlv_tag_inst ti;
 
 	/*! Decoding function callback. Invoked for each defined and present IE encountered in the message.
 	 * Return 0 on success, negative on failure. */

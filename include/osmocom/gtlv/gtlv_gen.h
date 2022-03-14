@@ -37,6 +37,10 @@ struct osmo_gtlv_gen_ie;
 #define OSMO_GTLV_GEN_O_MULTI(MAX, TLV_GEN_IE, MEMB_NAME) { MEMB_NAME, .multi = MAX, .ie = &(TLV_GEN_IE) }
 #define OSMO_GTLV_GEN_M_MULTI(MAX, MAND_COUNT, TLV_GEN_IE, MEMB_NAME) \
 	{ MEMB_NAME, .multi = MAX, .multi_mandatory = MAND_COUNT, .ie = &(TLV_GEN_IE) }
+#define OSMO_GTLV_GEN_O_INST(INSTANCE, TLV_GEN_IE, MEMB_NAME) { MEMB_NAME, .optional = true, .instance = INSTANCE, .ie = &TLV_GEN_IE }
+#define OSMO_GTLV_GEN_M_INST(INSTANCE, TLV_GEN_IE, MEMB_NAME) { MEMB_NAME, .instance = INSTANCE, .ie = &(TLV_GEN_IE) }
+
+#define OSMO_GTLV_GEN_NO_INSTANCE INT_MAX
 
 /*! osmo_gtlv_gen_ie with all members == NULL, so that all are derived from the member name. */
 extern const struct osmo_gtlv_gen_ie osmo_gtlv_gen_ie_auto;
@@ -81,6 +85,10 @@ struct osmo_gtlv_gen_ie_o {
 	/*! Number of mandatory occurences of the IE, only has an effect if .multi > 0. */
 	unsigned int multi_mandatory;
 
+	/* If any, the instance nr to match, in C that yields an unsigned int.
+	 * e.g. "1" or "MYPROTO_FOO_INST_ONE". */
+	const char *instance;
+
 	/*! IE decoding / encoding instructions. If NULL, the entire IE definition is derived from .name.
 	 * 'MYPROTO_IEI_NAME', 'myproto_dec_name()', 'myproto_enc_name()', 'myproto_enc_to_str_name()'.
 	 * Your myproto_ies_custom.h needs to define an enum value MYPROTO_IEI_NAME and*/
@@ -96,7 +104,9 @@ struct osmo_gtlv_gen_ie {
 	 * When there are no nested IEs, the type needs to be defined manually by a myproto_ies_custom.h. */
 	const char *decoded_type;
 
-	/*! C name of this tag value, e.g. "MYPROTO_IEI_FOO". If NULL, take "MYPROTO_IEI_"+upper(name) instead. */
+	/*! C name of this tag value, e.g. "foo" to use tag "MYPROTO_IEI_FOO".
+	 * If NULL, take "MYPROTO_IEI_"+upper(memb_name) instead, where memb_name comes from the osmo_gtlv_gen_ie_o.
+	 * decoded_type and/or dec_enc may be derived from this, if they are NULL. */
 	const char *tag_name;
 
 	/*! Name suffix of the dec/enc functions. "foo" -> myproto_dec_foo(), myproto_enc_foo(),

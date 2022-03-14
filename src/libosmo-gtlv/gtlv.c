@@ -27,6 +27,45 @@
 #include <osmocom/core/msgb.h>
 #include <osmocom/gtlv/gtlv.h>
 
+int osmo_gtlv_tag_inst_cmp(const struct osmo_gtlv_tag_inst *a, const struct osmo_gtlv_tag_inst *b)
+{
+	int cmp;
+	if (a == b)
+		return 0;
+	if (!a)
+		return -1;
+	if (!b)
+		return 1;
+	cmp = OSMO_CMP(a->tag, b->tag);
+	if (cmp)
+		return cmp;
+	cmp = OSMO_CMP(a->instance_present ? 1 : 0, b->instance_present ? 1 : 0);
+	if (cmp)
+		return cmp;
+	if (a->instance_present)
+		return OSMO_CMP(a->instance, b->instance);
+	return 0;
+}
+
+int osmo_gtlv_tag_inst_to_str_buf(char *buf, size_t buflen, const struct osmo_gtlv_tag_inst *ti,
+				 const struct value_string *tag_names)
+{
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+	if (!tag_names)
+		OSMO_STRBUF_PRINTF(sb, "%u", ti->tag);
+	else
+		OSMO_STRBUF_PRINTF(sb, "%s", get_value_string(tag_names, ti->tag));
+	if (ti->instance_present)
+		OSMO_STRBUF_PRINTF(sb, "[%u]", ti->instance);
+	return sb.chars_needed;
+}
+
+char *osmo_gtlv_tag_inst_to_str_c(void *ctx, const struct osmo_gtlv_tag_inst *ti,
+				 const struct value_string *tag_names)
+{
+	OSMO_NAME_C_IMPL(ctx, 64, "ERROR", osmo_gtlv_tag_inst_to_str_buf, ti, tag_names)
+}
+
 static int next_tl_valid(const struct osmo_gtlv_load *gtlv, const uint8_t **ie_start_p, size_t *buflen_left_p)
 {
 	const uint8_t *ie_start;
@@ -102,6 +141,7 @@ int osmo_gtlv_load_next(struct osmo_gtlv_load *gtlv)
 
 	/* Locate next IE */
 	OSMO_ASSERT(gtlv->cfg->load_tl);
+	gtlv->ti = (struct osmo_gtlv_tag_inst){};
 	rc = gtlv->cfg->load_tl(gtlv, ie_start, buflen_left);
 	if (rc)
 		return rc;
@@ -117,16 +157,19 @@ int osmo_gtlv_load_next(struct osmo_gtlv_load *gtlv)
 /* Return the tag of the IE that osmo_gtlv_next() would yield, do not change the gtlv state.
  *
  * \param[in] gtlv  state for TLV parsing position; is not modified.
- * \returns the tag number on success, negative on TLV parsing error, -ENOENT when no more tags
- *          follow.
+ * \param[out] tag  the tag number on success, if NULL don't return the tag.
+ * \param[out] instance  the instance number or OSMO_GTLV_NO_INSTANCE if there is no instance value,
+ *                       if NULL don't return the instance value.
+ * \returns 0 on success, negative on TLV parsing error, -ENOENT when no more tags follow.
  */
-int osmo_gtlv_load_peek_tag(const struct osmo_gtlv_load *gtlv)
+int osmo_gtlv_load_peek_tag(const struct osmo_gtlv_load *gtlv, struct osmo_gtlv_tag_inst *ti)
 {
 	const uint8_t *ie_start;
 	size_t buflen_left;
 	int rc;
 	/* Guard against modification by load_tl(). */
 	struct osmo_gtlv_load mtlv = *gtlv;
+	mtlv.ti = (struct osmo_gtlv_tag_inst){};
 
 	rc = next_tl_valid(&mtlv, &ie_start, &buflen_left);
 	if (rc)
@@ -140,15 +183,25 @@ int osmo_gtlv_load_peek_tag(const struct osmo_gtlv_load *gtlv)
 	rc = gtlv->cfg->load_tl(&mtlv, ie_start, buflen_left);
 	if (rc)
 		return -EBADMSG;
-	return mtlv.tag;
+	if (ti)
+		*ti = mtlv.ti;
+	return 0;
 }
 
 /* Same as osmo_gtlv_load_next(), but skip any IEs until the given tag is reached. Change the gtlv state only when success
  * is returned.
  * \param[out] gtlv  Return the next IE's TLV info.
  * \param[in] tag  Tag value to match.
+ * \param[in] instance  Instance value to match; For IEs that have no instance value (no TLIV), pass
+ *                      OSMO_GTLV_NO_INSTANCE.
  * \return 0 when the tag is found. Return -ENOENT when no such tag follows and keep the gtlv unchanged. */
 int osmo_gtlv_load_next_by_tag(struct osmo_gtlv_load *gtlv, unsigned int tag)
+{
+	struct osmo_gtlv_tag_inst ti = { .tag = tag };
+	return osmo_gtlv_load_next_by_tag_inst(gtlv, &ti);
+}
+
+int osmo_gtlv_load_next_by_tag_inst(struct osmo_gtlv_load *gtlv, const struct osmo_gtlv_tag_inst *ti)
 {
 	struct osmo_gtlv_load work = *gtlv;
 	for (;;) {
@@ -157,7 +210,7 @@ int osmo_gtlv_load_next_by_tag(struct osmo_gtlv_load *gtlv, unsigned int tag)
 			return rc;
 		if (!work.val)
 			return -ENOENT;
-		if (work.tag == tag) {
+		if (!osmo_gtlv_tag_inst_cmp(&work.ti, ti)) {
 			*gtlv = work;
 			return 0;
 		}
@@ -190,16 +243,25 @@ int osmo_gtlv_load_next_by_tag(struct osmo_gtlv_load *gtlv, unsigned int tag)
  */
 int osmo_gtlv_put_tl(struct osmo_gtlv_put *gtlv, unsigned int tag, size_t len)
 {
+	struct osmo_gtlv_tag_inst ti = { .tag = tag };
+	return osmo_gtlv_put_tli(gtlv, &ti, len);
+}
+
+/* Put tag header, instance value and length at the end of the msgb, according to gtlv->cfg->store_tl().
+ * This is the same as osmo_gtlv_put_tl(), only osmo_gtlv_put_tl() passes instance = 0.
+ */
+int osmo_gtlv_put_tli(struct osmo_gtlv_put *gtlv, const struct osmo_gtlv_tag_inst *ti, size_t len)
+{
 	int rc;
 	uint8_t *last_tl;
 	OSMO_ASSERT(gtlv->cfg->store_tl);
 	last_tl = gtlv->dst->tail;
-	rc = gtlv->cfg->store_tl(gtlv->dst->tail, msgb_tailroom(gtlv->dst), tag, len, gtlv);
+	rc = gtlv->cfg->store_tl(gtlv->dst->tail, msgb_tailroom(gtlv->dst), ti, len, gtlv);
 	if (rc < 0)
 		return rc;
 	if (rc > 0)
 		msgb_put(gtlv->dst, rc);
-	gtlv->last_tag = tag;
+	gtlv->last_ti = *ti;
 	gtlv->last_tl = last_tl;
 	gtlv->last_val = gtlv->dst->tail;
 	return 0;
@@ -212,7 +274,7 @@ int osmo_gtlv_put_tl(struct osmo_gtlv_put *gtlv, unsigned int tag, size_t len)
 int osmo_gtlv_put_update_tl(struct osmo_gtlv_put *gtlv)
 {
 	size_t len = gtlv->dst->tail - gtlv->last_val;
-	int rc = gtlv->cfg->store_tl(gtlv->last_tl, gtlv->last_val - gtlv->last_tl, gtlv->last_tag, len, gtlv);
+	int rc = gtlv->cfg->store_tl(gtlv->last_tl, gtlv->last_val - gtlv->last_tl, &gtlv->last_ti, len, gtlv);
 	if (rc < 0)
 		return rc;
 	/* In case the TL has changed in size, hopefully the implementation has moved the msgb data. Make sure last_val
@@ -224,22 +286,22 @@ int osmo_gtlv_put_update_tl(struct osmo_gtlv_put *gtlv)
 static int t8l8v_load_tl(struct osmo_gtlv_load *gtlv, const uint8_t *src_data, size_t src_data_len)
 {
 	/* already validated in next_tl_valid(): src_data_len >= cfg->tl_min_size == 2. */
-	gtlv->tag = src_data[0];
+	gtlv->ti.tag = src_data[0];
 	gtlv->len = src_data[1];
 	gtlv->val = src_data + 2;
 	return 0;
 }
 
-static int t8l8v_store_tl(uint8_t *dst_data, size_t dst_data_avail, unsigned int tag, size_t len,
+static int t8l8v_store_tl(uint8_t *dst_data, size_t dst_data_avail, const struct osmo_gtlv_tag_inst *ti, size_t len,
 			  struct osmo_gtlv_put *gtlv)
 {
-	if (tag > UINT8_MAX)
+	if (ti->tag > UINT8_MAX)
 		return -EINVAL;
 	if (len > UINT8_MAX)
 		return -EMSGSIZE;
 	if (dst_data_avail < 2)
 		return -ENOSPC;
-	dst_data[0] = tag;
+	dst_data[0] = ti->tag;
 	dst_data[1] = len;
 	return 2;
 }
@@ -253,22 +315,22 @@ const struct osmo_gtlv_cfg osmo_t8l8v_cfg = {
 static int t16l16v_load_tl(struct osmo_gtlv_load *gtlv, const uint8_t *src_data, size_t src_data_len)
 {
 	/* already validated in next_tl_valid(): src_data_len >= cfg->tl_min_size == 4. */
-	gtlv->tag = osmo_load16be(src_data);
+	gtlv->ti.tag = osmo_load16be(src_data);
 	gtlv->len = osmo_load16be(src_data + 2);
 	gtlv->val = src_data + 4;
 	return 0;
 }
 
-static int t16l16v_store_tl(uint8_t *dst_data, size_t dst_data_avail, unsigned int tag, size_t len,
+static int t16l16v_store_tl(uint8_t *dst_data, size_t dst_data_avail, const struct osmo_gtlv_tag_inst *ti, size_t len,
 			    struct osmo_gtlv_put *gtlv)
 {
-	if (tag > UINT16_MAX)
+	if (ti->tag > UINT16_MAX)
 		return -EINVAL;
 	if (len > UINT16_MAX)
 		return -EMSGSIZE;
 	if (dst_data_avail < 4)
 		return -ENOSPC;
-	osmo_store16be(tag, dst_data);
+	osmo_store16be(ti->tag, dst_data);
 	osmo_store16be(len, dst_data + 2);
 	return 4;
 }

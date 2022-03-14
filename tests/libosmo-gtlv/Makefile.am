@@ -1,5 +1,6 @@
 SUBDIRS = \
 	test_gtlv_gen \
+	test_tliv \
 	$(NULL)
 
 AM_CPPFLAGS = \
@@ -45,3 +46,4 @@ update_exp:
 	$(builddir)/gtlv_test >$(srcdir)/gtlv_test.ok
 	$(builddir)/gtlv_dec_enc_test >$(srcdir)/gtlv_dec_enc_test.ok
 	$(MAKE) -C test_gtlv_gen update_exp
+	$(MAKE) -C test_tliv update_exp

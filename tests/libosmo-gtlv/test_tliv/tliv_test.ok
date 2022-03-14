@@ -1,0 +1,32 @@
+
+=== start tliv ordered test_enc_dec[0]
+encoded: MOO={ 'BAR'=23,true 'BAR'=42,false }
+myproto_msg_enc() rc = 0
+01 01 03 02 17 01 01 03 05 2a 00 .
+myproto_msg_dec() rc = 0
+decoded: MOO={ 'BAR'=23,true 'BAR'=42,false }
+=== end tliv ordered test_enc_dec[0]
+
+=== start tliv ordered test_enc_dec[1]
+encoded: MOO={ 'BAR'=11,true 'BAR'=22,false 'BAR'=33,true }
+myproto_msg_enc() rc = 0
+01 01 03 02 0b 01 01 03 03 16 00 01 03 05 21 01 .
+myproto_msg_dec() rc = 0
+decoded: MOO={ 'BAR'=11,true 'BAR'=22,false 'BAR'=33,true }
+=== end tliv ordered test_enc_dec[1]
+
+=== start tliv unordered test_enc_dec[0]
+encoded: MOO={ 'BAR'=23,true 'BAR'=42,false }
+myproto_msg_enc() rc = 0
+01 01 03 02 17 01 01 03 05 2a 00 .
+myproto_msg_dec() rc = 0
+decoded: MOO={ 'BAR'=23,true 'BAR'=42,false }
+=== end tliv unordered test_enc_dec[0]
+
+=== start tliv unordered test_enc_dec[1]
+encoded: MOO={ 'BAR'=11,true 'BAR'=22,false 'BAR'=33,true }
+myproto_msg_enc() rc = 0
+01 01 03 02 0b 01 01 03 03 16 00 01 03 05 21 01 .
+myproto_msg_dec() rc = 0
+decoded: MOO={ 'BAR'=11,true 'BAR'=22,false 'BAR'=33,true }
+=== end tliv unordered test_enc_dec[1]

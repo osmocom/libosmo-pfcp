@@ -18,3 +18,9 @@ AT_KEYWORDS([gtlv_gen])
 cat $abs_srcdir/libosmo-gtlv/test_gtlv_gen/gtlv_gen_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/libosmo-gtlv/test_gtlv_gen/gtlv_gen_test], [], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([tliv])
+AT_KEYWORDS([tliv])
+cat $abs_srcdir/libosmo-gtlv/test_tliv/tliv_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/libosmo-gtlv/test_tliv/tliv_test], [], [expout], [ignore])
+AT_CLEANUP

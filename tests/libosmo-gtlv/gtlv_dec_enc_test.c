@@ -205,21 +205,21 @@ int enc_to_str_repeat_struct(char *buf, size_t buflen, const void *encode_from)
 
 struct osmo_gtlv_coding nested_inner_msg_ies[] = {
 	{
-		.tag = TAG_FOO,
+		.ti = { TAG_FOO },
 		.dec_func = dec_u16,
 		.enc_func = enc_u16,
 		.enc_to_str_func = enc_to_str_u16,
 		.memb_ofs = offsetof(struct nested_inner_msg, foo),
 	},
 	{
-		.tag = TAG_BAR,
+		.ti = { TAG_BAR },
 		.dec_func = dec_bar,
 		.enc_func = enc_bar,
 		.enc_to_str_func = enc_to_str_bar,
 		.memb_ofs = offsetof(struct nested_inner_msg, bar),
 	},
 	{
-		.tag = TAG_BAZ,
+		.ti = { TAG_BAZ },
 		.dec_func = dec_baz,
 		.enc_func = enc_baz,
 		.enc_to_str_func = enc_to_str_baz,
@@ -230,21 +230,21 @@ struct osmo_gtlv_coding nested_inner_msg_ies[] = {
 
 struct osmo_gtlv_coding msg_ie_coding[] = {
 	{
-		.tag = TAG_FOO,
+		.ti = { TAG_FOO },
 		.dec_func = dec_u16,
 		.enc_func = enc_u16,
 		.enc_to_str_func = enc_to_str_u16,
 		.memb_ofs = offsetof(struct decoded_msg, foo),
 	},
 	{
-		.tag = TAG_BAR,
+		.ti = { TAG_BAR },
 		.dec_func = dec_bar,
 		.enc_func = enc_bar,
 		.enc_to_str_func = enc_to_str_bar,
 		.memb_ofs = offsetof(struct decoded_msg, bar),
 	},
 	{
-		.tag = TAG_BAZ,
+		.ti = { TAG_BAZ },
 		.dec_func = dec_baz,
 		.enc_func = enc_baz,
 		.enc_to_str_func = enc_to_str_baz,
@@ -253,7 +253,7 @@ struct osmo_gtlv_coding msg_ie_coding[] = {
 		.presence_flag_ofs = offsetof(struct decoded_msg, baz_present),
 	},
 	{
-		.tag = TAG_REPEAT_INT,
+		.ti = { TAG_REPEAT_INT },
 		.dec_func = dec_u16,
 		.enc_func = enc_u16,
 		.enc_to_str_func = enc_to_str_u16,
@@ -264,7 +264,7 @@ struct osmo_gtlv_coding msg_ie_coding[] = {
 		.count_max = ARRAY_SIZE(((struct decoded_msg *)0)->repeat_int),
 	},
 	{
-		.tag = TAG_REPEAT_STRUCT,
+		.ti = { TAG_REPEAT_STRUCT },
 		.dec_func = dec_repeat_struct,
 		.enc_func = enc_repeat_struct,
 		.enc_to_str_func = enc_to_str_repeat_struct,
@@ -275,7 +275,7 @@ struct osmo_gtlv_coding msg_ie_coding[] = {
 		.count_max = ARRAY_SIZE(((struct decoded_msg *)0)->repeat_struct),
 	},
 	{
-		.tag = TAG_NEST,
+		.ti = { TAG_NEST },
 		.memb_ofs = offsetof(struct decoded_msg, nest),
 		.nested_ies = nested_inner_msg_ies,
 		.has_presence_flag = true,

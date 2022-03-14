@@ -25,10 +25,25 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 struct msgb;
 struct osmo_gtlv_load;
 struct osmo_gtlv_put;
+struct value_string;
+
+struct osmo_gtlv_tag_inst {
+	unsigned int tag;
+	bool instance_present;
+	unsigned int instance;
+};
+
+int osmo_gtlv_tag_inst_cmp(const struct osmo_gtlv_tag_inst *a, const struct osmo_gtlv_tag_inst *b);
+
+int osmo_gtlv_tag_inst_to_str_buf(char *buf, size_t buflen, const struct osmo_gtlv_tag_inst *ti,
+				 const struct value_string *tag_names);
+char *osmo_gtlv_tag_inst_to_str_c(void *ctx, const struct osmo_gtlv_tag_inst *ti,
+				 const struct value_string *tag_names);
 
 /*! TL configuration for osmo_gtlv_load*() and osmo_gtlv_put*(). Depending on these implementations provided by the caller,
  * osmo_gtlv can load any sizes of tag and length fields (that don't surpass the value range of unsigned int and size_t,
@@ -49,6 +64,7 @@ struct osmo_gtlv_cfg {
 	/*! Read one TL from the start of src_data.
 	 * \param gtlv  Return the T (tag) value read from src_data in gtlv->tag.
 	 *             Return the L (length) value read from src_data in gtlv->len.
+	 *             Return the I (instance) value read from src_data in gtlv->len; ignore if there is no I.
 	 *             Return the position just after the TL in gtlv->*val. If there is V data, point at the start of the
 	 *             V data in src_data. If there is no V data, point at the byte just after the TL part in src_data.
 	 * \param src_data  Part of raw message being decoded.
@@ -68,12 +84,14 @@ struct osmo_gtlv_cfg {
 	 * \param dst_data  Write TL data to the start of this buffer.
 	 * \param dst_data_avail  Remaining available space in dst_data.
 	 * \param tag  The T value to store in dst_data.
+	 * \param instance  The I value to store in dst_data (if this tag is a TLIV); ignore when not a TLIV.
 	 * \param len  The L value to store in dst_data.
 	 * \param gtlv  Backpointer to the osmo_gtlv_put struct, including gtlv->dst, the underlying msgb.
 	 * \return the size of the TL part in bytes on success, -EINVAL if tag is invalid, -EMSGSIZE if len is too large
 	 * or dst_data_avail is too small for the TL.
 	 */
-	int (*store_tl)(uint8_t *dst_data, size_t dst_data_avail, unsigned int tag, size_t len, struct osmo_gtlv_put *gtlv);
+	int (*store_tl)(uint8_t *dst_data, size_t dst_data_avail, const struct osmo_gtlv_tag_inst *ti, size_t len,
+			struct osmo_gtlv_put *gtlv);
 };
 
 /*! Configuration that allows parsing an 8bit tag and 8bit length TLV. */
@@ -97,7 +115,7 @@ struct osmo_gtlv_load {
 	} src;
 
 	/*! Return value from last invocation of osmo_gtlv_load_next*(): tag value of parsed IE. */
-	unsigned int tag;
+	struct osmo_gtlv_tag_inst ti;
 	/*! Return value from last invocation of osmo_gtlv_load_next*(): Start of the IE's payload data (after tag and
 	 * length). If the end of the src buffer is reached, val == NULL. If a TLV contained no value part, len == 0,
 	 * but this still points just after the TL. */
@@ -114,8 +132,9 @@ static inline void osmo_gtlv_load_start(struct osmo_gtlv_load *gtlv)
 }
 
 int osmo_gtlv_load_next(struct osmo_gtlv_load *gtlv);
-int osmo_gtlv_load_peek_tag(const struct osmo_gtlv_load *gtlv);
+int osmo_gtlv_load_peek_tag(const struct osmo_gtlv_load *gtlv, struct osmo_gtlv_tag_inst *ti);
 int osmo_gtlv_load_next_by_tag(struct osmo_gtlv_load *gtlv, unsigned int tag);
+int osmo_gtlv_load_next_by_tag_inst(struct osmo_gtlv_load *gtlv, const struct osmo_gtlv_tag_inst *ti);
 
 /* State for storing a TLV structure into a msgb. */
 struct osmo_gtlv_put {
@@ -128,10 +147,11 @@ struct osmo_gtlv_put {
 	/* msgb to append new TL to */
 	struct msgb *dst;
 	/* What was the last TL written and where are its TL and V */
-	unsigned int last_tag;
+	struct osmo_gtlv_tag_inst last_ti;
 	uint8_t *last_tl;
 	uint8_t *last_val;
 };
 
 int osmo_gtlv_put_tl(struct osmo_gtlv_put *gtlv, unsigned int tag, size_t len);
+int osmo_gtlv_put_tli(struct osmo_gtlv_put *gtlv, const struct osmo_gtlv_tag_inst *ti, size_t len);
 int osmo_gtlv_put_update_tl(struct osmo_gtlv_put *gtlv);
