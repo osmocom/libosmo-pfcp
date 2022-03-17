@@ -97,6 +97,7 @@ AC_OUTPUT(
     tests/libosmo-gtlv/Makefile
     tests/libosmo-gtlv/test_gtlv_gen/Makefile
     tests/libosmo-gtlv/test_tliv/Makefile
+    tests/libosmo-pfcp/Makefile
     doc/Makefile
     contrib/Makefile
     Makefile)

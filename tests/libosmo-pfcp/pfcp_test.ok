@@ -1,0 +1,154 @@
+
+=== start test_enc_dec[0]
+encoding: HEARTBEAT_REQ
+PFCPv1 HEARTBEAT_REQ hdr={seq=1} ies={ 'Recovery Time Stamp'=1234 }
+osmo_pfcp_msg_encode() rc = 0
+20 01 00 0c 00 00 01 00 00 60 00 04 00 00 04 d2 .
+osmo_pfcp_msg_decode_header() rc = 16
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[0]
+
+=== start test_enc_dec[1]
+encoding: HEARTBEAT_RESP
+PFCPv1 HEARTBEAT_RESP hdr={seq=2} ies={ 'Recovery Time Stamp'=5678 }
+osmo_pfcp_msg_encode() rc = 0
+20 02 00 0c 00 00 02 00 00 60 00 04 00 00 16 2e .
+osmo_pfcp_msg_decode_header() rc = 16
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[1]
+
+=== start test_enc_dec[2]
+encoding: ASSOC_SETUP_REQ
+PFCPv1 ASSOC_SETUP_REQ hdr={seq=3} ies={ 'Node ID'=v4:4.3.2.1 'Recovery Time Stamp'=724249387 }
+osmo_pfcp_msg_encode() rc = 0
+20 05 00 15 00 00 03 00 00 3c 00 05 00 04 03 02 01 00 60 00 04 2b 2b 2b 2b .
+osmo_pfcp_msg_decode_header() rc = 25
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[2]
+
+=== start test_enc_dec[3]
+encoding: ASSOC_SETUP_RESP
+PFCPv1 ASSOC_SETUP_RESP hdr={seq=4} ies={ 'Node ID'=fqdn:"example.com" 'Cause'=Request accepted (success) 'Recovery Time Stamp'=724249387 'UP Function Features'=( BUCP PDIU ) }
+osmo_pfcp_msg_encode() rc = 0
+20 06 00 2b 00 00 04 00 00 3c 00 0c 02 65 78 61 6d 70 6c 65 2e 63 6f 6d 00 13 00 01 01 00 60 00 04 2b 2b 2b 2b 00 2b 00 06 01 02 00 00 00 00 .
+osmo_pfcp_msg_decode_header() rc = 47
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[3]
+
+=== start test_enc_dec[4]
+encoding: ASSOC_RELEASE_REQ
+PFCPv1 ASSOC_RELEASE_REQ hdr={seq=5} ies={ 'Node ID'=v6:[102:304::] }
+osmo_pfcp_msg_encode() rc = 0
+20 09 00 19 00 00 05 00 00 3c 00 11 01 01 02 03 04 00 00 00 00 00 00 00 00 00 00 00 00 .
+osmo_pfcp_msg_decode_header() rc = 29
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[4]
+
+=== start test_enc_dec[5]
+encoding: ASSOC_RELEASE_RESP
+PFCPv1 ASSOC_RELEASE_RESP hdr={seq=6} ies={ 'Node ID'=v4:4.3.2.1 'Cause'=Request rejected (reason not specified) }
+osmo_pfcp_msg_encode() rc = 0
+20 0a 00 12 00 00 06 00 00 3c 00 05 00 04 03 02 01 00 13 00 01 40 .
+osmo_pfcp_msg_decode_header() rc = 22
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[5]
+
+=== start test_enc_dec[6]
+encoding: SESSION_EST_REQ
+PFCPv1 SESSION_EST_REQ hdr={seq=7 SEID=0x0} ies={ 'Node ID'=v4:127.0.0.1 'F-SEID'=0x1234567890abcdef,v4:10.9.8.7 'Create PDR'={ { 'PDR ID'=1 'Precedence'=255 'PDI'={ 'Source Interface'=Core 'UE IP Address'=,dst,v4:192.168.0.23 } 'FAR ID'=1 }, { 'PDR ID'=2 'Precedence'=255 'PDI'={ 'Source Interface'=Access 'F-TEID'=CHOOSE-v4 } 'Outer Header Removal'=GTP_U_UDP_IPV4 'FAR ID'=2 } } 'Create FAR'={ { 'FAR ID'=1 'Apply Action'=( FORW ) 'Forwarding Parameters'={ 'Destination Interface'=Access 'Outer Header Creation'=( GTP_U_UDP_IPV4 ),TEID:0xabcdef,v4:10.9.8.7 } }, { 'FAR ID'=2 'Apply Action'=( FORW ) 'Forwarding Parameters'={ 'Destination Interface'=Core } } } }
+osmo_pfcp_msg_encode() rc = 0
+21 32 00 c3 00 00 00 00 00 00 00 00 00 00 07 00 00 3c 00 05 00 7f 00 00 01 00 39 00 0d 02 12 34 56 78 90 ab cd ef 0a 09 08 07 00 01 00 28 00 38 00 02 00 01 00 1d 00 04 00 00 00 ff 00 02 00 0e 00 14 00 01 01 00 5d 00 05 06 c0 a8 00 17 00 6c 00 04 00 00 00 01 00 01 00 29 00 38 00 02 00 02 00 1d 00 04 00 00 00 ff 00 02 00 0a 00 14 00 01 00 00 15 00 01 05 00 5f 00 01 00 00 6c 00 04 00 00 00 02 00 03 00 25 00 6c 00 04 00 00 00 01 00 2c 00 02 02 00 00 04 00 13 00 2a 00 01 00 00 54 00 0a 01 00 00 ab cd ef 0a 09 08 07 00 03 00 17 00 6c 00 04 00 00 00 02 00 2c 00 02 02 00 00 04 00 05 00 2a 00 01 01 .
+osmo_pfcp_msg_decode_header() rc = 199
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[6]
+
+=== start test_enc_dec[7]
+encoding: SESSION_EST_RESP
+PFCPv1 SESSION_EST_RESP hdr={seq=8 SEID=0x123456789abcdef} ies={ 'Node ID'=v4:127.0.0.2 'Cause'=Request accepted (success) 'F-SEID'=0x1234567890abcdef,v4:10.9.8.7 'Created PDR'={ { 'PDR ID'=1 }, { 'PDR ID'=2 'F-TEID'=TEID-0x4d2,v4:10.9.8.7 } } }
+osmo_pfcp_msg_encode() rc = 0
+21 33 00 4c 01 23 45 67 89 ab cd ef 00 00 08 00 00 3c 00 05 00 7f 00 00 02 00 13 00 01 01 00 39 00 0d 02 12 34 56 78 90 ab cd ef 0a 09 08 07 00 08 00 06 00 38 00 02 00 01 00 08 00 13 00 38 00 02 00 02 00 15 00 09 01 00 00 04 d2 0a 09 08 07 .
+osmo_pfcp_msg_decode_header() rc = 80
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[7]
+
+=== start test_enc_dec[8]
+encoding: SESSION_MOD_REQ
+PFCPv1 SESSION_MOD_REQ hdr={seq=9 SEID=0x0} ies={ 'Remove PDR'={ { 'PDR ID'=1 } } 'Remove FAR'={ { 'FAR ID'=1 } } 'Create PDR'={ { 'PDR ID'=3 'Precedence'=255 'PDI'={ 'Source Interface'=Access 'F-TEID'=CHOOSE-v4 } 'Outer Header Removal'=GTP_U_UDP_IPV4 'FAR ID'=3 } } 'Create FAR'={ { 'FAR ID'=3 'Apply Action'=( FORW ) 'Forwarding Parameters'={ 'Destination Interface'=Access 'Outer Header Creation'=( GTP_U_UDP_IPV4 ),TEID:0xabcdef,v4:10.9.8.7 } } } 'Update PDR'={ { 'PDR ID'=1 'Outer Header Removal'=GTP_U_UDP_IPV4 'FAR ID'=1 } } 'Update FAR'={ { 'FAR ID'=1 'Update Forwarding Parameters'={ 'Network Instance'="internet" } } } }
+osmo_pfcp_msg_encode() rc = 0
+21 34 00 ab 00 00 00 00 00 00 00 00 00 00 09 00 00 0f 00 06 00 38 00 02 00 01 00 10 00 08 00 6c 00 04 00 00 00 01 00 01 00 29 00 38 00 02 00 03 00 1d 00 04 00 00 00 ff 00 02 00 0a 00 14 00 01 00 00 15 00 01 05 00 5f 00 01 00 00 6c 00 04 00 00 00 03 00 03 00 25 00 6c 00 04 00 00 00 03 00 2c 00 02 02 00 00 04 00 13 00 2a 00 01 00 00 54 00 0a 01 00 00 ab cd ef 0a 09 08 07 00 09 00 13 00 38 00 02 00 01 00 5f 00 01 00 00 6c 00 04 00 00 00 01 00 0a 00 18 00 6c 00 04 00 00 00 01 00 0b 00 0c 00 16 00 08 69 6e 74 65 72 6e 65 74 .
+osmo_pfcp_msg_decode_header() rc = 175
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[8]
+
+=== start test_enc_dec[9]
+encoding: SESSION_MOD_RESP
+PFCPv1 SESSION_MOD_RESP hdr={seq=10 SEID=0x123456789abcdef} ies={ 'Cause'=Request accepted (success) 'Created PDR'={ { 'PDR ID'=3 'F-TEID'=TEID-0x4d2,v4:10.9.8.7 } } 'Updated PDR'={ { 'PDR ID'=1 'F-TEID'=TEID-0x4d2,v4:10.9.8.7 } } }
+osmo_pfcp_msg_encode() rc = 0
+21 35 00 3f 01 23 45 67 89 ab cd ef 00 00 0a 00 00 13 00 01 01 00 08 00 13 00 38 00 02 00 03 00 15 00 09 01 00 00 04 d2 0a 09 08 07 01 00 00 13 00 38 00 02 00 01 00 15 00 09 01 00 00 04 d2 0a 09 08 07 .
+osmo_pfcp_msg_decode_header() rc = 67
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[9]
+
+=== start test_enc_dec[10]
+encoding: SESSION_MOD_RESP
+PFCPv1 SESSION_MOD_RESP hdr={seq=11 SEID=0x123456789abcdef} ies={ 'Cause'=Mandatory IE missing 'Offending IE'=Apply Action }
+osmo_pfcp_msg_encode() rc = 0
+21 35 00 17 01 23 45 67 89 ab cd ef 00 00 0b 00 00 13 00 01 42 00 28 00 02 00 2c .
+osmo_pfcp_msg_decode_header() rc = 27
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[10]
+
+=== start test_enc_dec[11]
+encoding: SESSION_DEL_REQ
+PFCPv1 SESSION_DEL_REQ hdr={seq=12 SEID=0x123456789abcdef} ies={ }
+osmo_pfcp_msg_encode() rc = 0
+21 36 00 0c 01 23 45 67 89 ab cd ef 00 00 0c 00 .
+osmo_pfcp_msg_decode_header() rc = 16
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[11]
+
+=== start test_enc_dec[12]
+encoding: SESSION_DEL_RESP
+PFCPv1 SESSION_DEL_RESP hdr={seq=13 SEID=0x123456789abcdef} ies={ 'Cause'=No established PFCP Association }
+osmo_pfcp_msg_encode() rc = 0
+21 37 00 11 01 23 45 67 89 ab cd ef 00 00 0d 00 00 13 00 01 48 .
+osmo_pfcp_msg_decode_header() rc = 21
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[12]
+
+=== start test_enc_dec[13]
+encoding: SESSION_DEL_RESP
+PFCPv1 SESSION_DEL_RESP hdr={seq=13 SEID=0x123456789abcdef} ies={ 'Cause'=Request accepted (success) }
+osmo_pfcp_msg_encode() rc = 0
+21 37 00 11 01 23 45 67 89 ab cd ef 00 00 0d 00 00 13 00 01 01 .
+osmo_pfcp_msg_decode_header() rc = 21
+rc == msgb_length()
+osmo_pfcp_msg_decode_tlv() rc = 0
+parsed == orig
+=== end test_enc_dec[13]
