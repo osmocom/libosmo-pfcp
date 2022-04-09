@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: Osmocom PFCP library
+Description: C Utility Library that implements the PFCP protocol and endpoint
+Version: @VERSION@
+Libs: -L${libdir} -losmo-pfcp
+Cflags: -I${includedir}/

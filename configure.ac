@@ -86,6 +86,7 @@ AM_CONFIG_HEADER(config.h)
 
 AC_OUTPUT(
     libosmo-gtlv.pc
+    libosmo-pfcp.pc
     include/Makefile
     include/osmocom/Makefile
     include/osmocom/gtlv/Makefile

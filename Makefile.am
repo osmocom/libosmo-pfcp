@@ -19,6 +19,7 @@ SUBDIRS = \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = \
 	libosmo-gtlv.pc \
+	libosmo-pfcp.pc \
 	$(NULL)
 
 BUILT_SOURCES = $(top_srcdir)/.version
