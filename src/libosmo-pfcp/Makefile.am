@@ -56,7 +56,7 @@ gen__pfcp_ies_auto_SOURCES = \
 	$(NULL)
 
 gen__pfcp_ies_auto_LDADD = \
-	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.a \
+	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.la \
 	$(LIBOSMOCORE_LIBS) \
 	$(COVERAGE_LDFLAGS) \
 	$(NULL)

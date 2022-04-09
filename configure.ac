@@ -85,6 +85,7 @@ dnl Generate the output
 AM_CONFIG_HEADER(config.h)
 
 AC_OUTPUT(
+    libosmo-gtlv.pc
     include/Makefile
     include/osmocom/Makefile
     include/osmocom/gtlv/Makefile

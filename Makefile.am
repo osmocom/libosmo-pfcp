@@ -16,6 +16,11 @@ SUBDIRS = \
 	contrib \
 	$(NULL)
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = \
+	libosmo-gtlv.pc \
+	$(NULL)
+
 BUILT_SOURCES = $(top_srcdir)/.version
 EXTRA_DIST = \
 	     .version \

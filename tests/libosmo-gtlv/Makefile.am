@@ -28,7 +28,7 @@ gtlv_test_SOURCES = \
 	$(NULL)
 
 gtlv_test_LDADD = \
-	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.a \
+	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.la \
 	$(LIBOSMOCORE_LIBS) \
 	$(NULL)
 
@@ -37,7 +37,7 @@ gtlv_dec_enc_test_SOURCES = \
 	$(NULL)
 
 gtlv_dec_enc_test_LDADD = \
-	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.a \
+	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.la \
 	$(LIBOSMOCORE_LIBS) \
 	$(NULL)
 

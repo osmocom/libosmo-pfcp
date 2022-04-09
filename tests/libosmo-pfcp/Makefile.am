@@ -23,7 +23,7 @@ pfcp_test_SOURCES = \
 
 pfcp_test_LDADD = \
 	$(top_builddir)/src/libosmo-pfcp/libosmo-pfcp.a \
-	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.a \
+	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.la \
 	$(LIBOSMOCORE_LIBS) \
 	$(NULL)
 

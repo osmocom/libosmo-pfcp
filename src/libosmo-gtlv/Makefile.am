@@ -16,12 +16,19 @@ AM_LDFLAGS = \
 	$(COVERAGE_LDFLAGS) \
 	$(NULL)
 
-noinst_LIBRARIES = \
-	libosmo-gtlv.a \
+lib_LTLIBRARIES = \
+	libosmo-gtlv.la \
 	$(NULL)
 
-libosmo_gtlv_a_SOURCES = \
+libosmo_gtlv_la_SOURCES = \
 	gtlv.c \
 	gtlv_dec_enc.c \
 	gtlv_gen.c \
 	$(NULL)
+
+# This is _NOT_ the library release version, it's an API version.
+# Please read Chapter 6 "Library interface versions" of the libtool
+# documentation before making any modification
+LIBVERSION=1:0:0
+
+libosmo_gtlv_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined -export-symbols-regex '^osmo_'
