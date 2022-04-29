@@ -48,6 +48,9 @@ struct osmo_pfcp_ie_node_id {
 	};
 };
 
+int osmo_pfcp_ie_node_id_to_str_buf(char *buf, size_t buflen, const struct osmo_pfcp_ie_node_id *node_id);
+char *osmo_pfcp_ie_node_id_to_str_c(void *ctx, const struct osmo_pfcp_ie_node_id *node_id);
+
 bool osmo_pfcp_bits_get(const uint8_t *bits, unsigned int bitpos);
 void osmo_pfcp_bits_set(uint8_t *bits, unsigned int bitpos, bool val);
 int osmo_pfcp_bits_to_str_buf(char *buf, size_t buflen, const uint8_t *bits, const struct value_string *bit_strs);

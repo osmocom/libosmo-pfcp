@@ -317,9 +317,8 @@ int osmo_pfcp_enc_node_id(struct osmo_gtlv_put *tlv, const void *decoded_struct,
 	return 0;
 }
 
-int osmo_pfcp_enc_to_str_node_id(char *buf, size_t buflen, const void *encode_from)
+int osmo_pfcp_ie_node_id_to_str_buf(char *buf, size_t buflen, const struct osmo_pfcp_ie_node_id *node_id)
 {
-	const struct osmo_pfcp_ie_node_id *node_id = encode_from;
 	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
 
 	switch (node_id->type) {
@@ -341,6 +340,16 @@ int osmo_pfcp_enc_to_str_node_id(char *buf, size_t buflen, const void *encode_fr
 
 	OSMO_STRBUF_APPEND(sb, osmo_sockaddr_to_str_buf2, &node_id->ip);
 	return sb.chars_needed;
+}
+
+char *osmo_pfcp_ie_node_id_to_str_c(void *ctx, const struct osmo_pfcp_ie_node_id *node_id)
+{
+	OSMO_NAME_C_IMPL(ctx, 64, "ERROR", osmo_pfcp_ie_node_id_to_str_buf, node_id)
+}
+
+int osmo_pfcp_enc_to_str_node_id(char *buf, size_t buflen, const void *encode_from)
+{
+	return osmo_pfcp_ie_node_id_to_str_buf(buf, buflen, encode_from);
 }
 
 bool osmo_pfcp_bits_get(const uint8_t *bits, unsigned int bitpos)
