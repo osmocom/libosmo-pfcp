@@ -73,7 +73,7 @@ struct osmo_pfcp_ie_up_function_features {
  *     printf("%s\n", osmo_pfcp_bits_to_str_c(x.bits, osmo_pfcp_cp_feature_strs));
  */
 struct osmo_pfcp_ie_cp_function_features {
-	uint8_t bits[3];
+	uint8_t bits[1];
 };
 
 /* 3GPP TS 29.244 8.2.37 */
