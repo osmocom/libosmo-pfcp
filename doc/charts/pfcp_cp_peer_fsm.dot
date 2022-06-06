@@ -4,6 +4,7 @@ labelloc=t; label="PFCP CP peer FSM\nControl Plane side, managing association wi
 
 cp [label="CP function",shape="box"]
 
+cp -> DISABLED [label="cp_peer_alloc()"]
 cp -> WAIT_ASSOC_SETUP_RESP [label="cp_peer_associate()"]
 
 txrx [label="PFCP socket",shape="box"]
