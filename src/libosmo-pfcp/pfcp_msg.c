@@ -546,3 +546,43 @@ char *osmo_pfcp_msg_to_str_c(void *ctx, const struct osmo_pfcp_msg *m)
 {
 	OSMO_NAME_C_IMPL(ctx, 256, "ERROR", osmo_pfcp_msg_to_str_buf, m)
 }
+
+void osmo_log_pfcp_msg_src(const struct osmo_pfcp_msg *m, unsigned int level, const char *file, int line,
+			   const char *fmt, ...)
+{
+	va_list ap;
+	struct osmo_fsm_inst *fi;
+	enum osmo_pfcp_cause *cause;
+	char *msg;
+
+	if (!log_check_level(DLPFCP, level))
+		return;
+
+	fi = m ? (m->ctx.session_fi ?: m->ctx.peer_fi) : NULL;
+	cause = osmo_pfcp_msg_cause(m);
+
+	va_start(ap, fmt);
+	msg = talloc_vasprintf(m, fmt, ap);
+	va_end(ap);
+
+	if (m->h.seid_present) {
+		LOGPFSMSLSRC(fi, DLPFCP, level, file, line,
+			     "%s%s PFCP seq-%u SEID-0x%"PRIx64" %s%s%s: %s",
+			     fi ? "" : osmo_sockaddr_to_str_c(OTC_SELECT, &m->remote_addr),
+			     m->rx ? "-rx->" : "<-tx-", m->h.sequence_nr,
+			     m->h.seid,
+			     osmo_pfcp_message_type_str(m->h.message_type), cause ? ": " : "",
+			     cause ? osmo_pfcp_cause_str(*cause) : "",
+			     msg);
+	} else {
+		LOGPFSMSLSRC(fi, DLPFCP, level, file, line,
+			     "%s%s PFCP seq-%u %s%s%s: %s",
+			     fi ? "" : osmo_sockaddr_to_str_c(OTC_SELECT, &m->remote_addr),
+			     m->rx ? "-rx->" : "<-tx-", m->h.sequence_nr,
+			     osmo_pfcp_message_type_str(m->h.message_type), cause ? ": " : "",
+			     cause ? osmo_pfcp_cause_str(*cause) : "",
+			     msg);
+	}
+
+	talloc_free(msg);
+}
