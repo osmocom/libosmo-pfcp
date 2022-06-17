@@ -89,6 +89,31 @@ void osmo_pfcp_ie_f_seid_set(struct osmo_pfcp_ie_f_seid *f_seid, uint64_t seid, 
 	osmo_pfcp_ip_addrs_set(&f_seid->ip_addr, remote_addr);
 }
 
+int osmo_pfcp_ie_f_seid_cmp(const struct osmo_pfcp_ie_f_seid *a, const struct osmo_pfcp_ie_f_seid *b)
+{
+	int rc;
+	if (a == b)
+		return 0;
+	if (!a)
+		return -1;
+	if (!b)
+		return 1;
+	/* It suffices if one of the IP addresses match */
+	if (a->ip_addr.v4_present && b->ip_addr.v4_present)
+		rc = osmo_sockaddr_cmp(&a->ip_addr.v4, &b->ip_addr.v4);
+	else if (a->ip_addr.v6_present && b->ip_addr.v6_present)
+		rc = osmo_sockaddr_cmp(&a->ip_addr.v6, &b->ip_addr.v6);
+	else
+		rc = (a->ip_addr.v4_present ? -1 : 1);
+	if (rc)
+		return rc;
+	if (a->seid < b->seid)
+		return -1;
+	if (a->seid > b->seid)
+		return 1;
+	return 0;
+}
+
 int osmo_pfcp_dec_cause(void *decoded_struct, void *decode_to, const struct osmo_gtlv_load *tlv)
 {
 	enum osmo_pfcp_cause *cause = decode_to;

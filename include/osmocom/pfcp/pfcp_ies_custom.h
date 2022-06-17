@@ -87,6 +87,7 @@ struct osmo_pfcp_ie_f_seid {
 
 void osmo_pfcp_ie_f_seid_set(struct osmo_pfcp_ie_f_seid *f_seid, uint64_t seid,
 			     const struct osmo_sockaddr *remote_addr);
+int osmo_pfcp_ie_f_seid_cmp(const struct osmo_pfcp_ie_f_seid *a, const struct osmo_pfcp_ie_f_seid *b);
 
 /* 3GPP TS 29.244 8.3.2 */
 struct osmo_pfcp_ie_f_teid {
