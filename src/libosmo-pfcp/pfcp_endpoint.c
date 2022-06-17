@@ -171,27 +171,38 @@ static bool pfcp_queue_retrans(struct osmo_pfcp_queue_entry *qe)
 	return true;
 }
 
-/* T1 for a given queue entry has expired */
-static void pfcp_queue_timer_cb(void *data)
+/* T1 for a given sent_requests queue entry has expired */
+static void pfcp_queue_sent_req_timer_cb(void *data)
 {
 	struct osmo_pfcp_queue_entry *qe = data;
 	bool keep;
 
-	if (qe->m->is_response) {
-		/* The response has waited in the queue for any retransmissions of its initiating request. Now that time
-		 * has passed and the response can be dropped from the queue. */
-		keep = false;
-	} else {
-		/* The request is still here, which means it has not received a response from the remote side.
-		 * Retransmit the request. */
-		keep = pfcp_queue_retrans(qe);
-	}
+	/* qe->m is a request sent earlier */
+	OSMO_ASSERT(!qe->m->is_response);
 
+	/* The request is still here, which means it has not received a response from the remote side.
+	 * Retransmit the request. */
+	keep = pfcp_queue_retrans(qe);
 	if (keep)
 		return;
+
+	/* Retransmission has elapsed. Notify resp_cb that receiving a response has failed. */
+	if (qe->m->ctx.resp_cb)
+		qe->m->ctx.resp_cb(qe->m, NULL, "PFCP request retransmissions elapsed, no response received");
 	/* Drop the queue entry. No more retransmissions. */
-	if (!qe->m->is_response && qe->m->ctx.resp_cb)
-		qe->m->ctx.resp_cb(qe->m, NULL, "PFCP retransmissions elapsed, no response received");
+	osmo_pfcp_queue_del(qe);
+}
+
+/* T1 for a given sent_responses queue entry has expired */
+static void pfcp_queue_sent_resp_timer_cb(void *data)
+{
+	struct osmo_pfcp_queue_entry *qe = data;
+
+	/* qe->m is a response sent earlier */
+	OSMO_ASSERT(qe->m->is_response);
+
+	/* The response has waited in the queue for any retransmissions of its initiating request. Now that time
+	 * has passed and the response can be dropped from the queue. */
 	osmo_pfcp_queue_del(qe);
 }
 
@@ -268,13 +279,15 @@ static int osmo_pfcp_endpoint_retrans_queue_add(struct osmo_pfcp_endpoint *endpo
 	/* Slight optimization: Add sent requests to the start of the list: we will usually receive a response shortly
 	 * after sending a request, removing that entry from the queue quickly.
 	 * Add sent responses to the end of the list: they will rarely be retransmitted at all. */
-	if (m->is_response)
+	if (m->is_response) {
 		llist_add_tail(&qe->entry, &endpoint->sent_responses);
-	else
-		llist_add_tail(&qe->entry, &endpoint->sent_requests);
+		osmo_timer_setup(&qe->t1, pfcp_queue_sent_resp_timer_cb, qe);
+	} else {
+		llist_add(&qe->entry, &endpoint->sent_requests);
+		osmo_timer_setup(&qe->t1, pfcp_queue_sent_req_timer_cb, qe);
+	}
 	talloc_set_destructor(qe, osmo_pfcp_queue_destructor);
 
-	osmo_timer_setup(&qe->t1, pfcp_queue_timer_cb, qe);
 	osmo_timer_schedule(&qe->t1, timeout/1000, (timeout % 1000) * 1000);
 	return 0;
 }
