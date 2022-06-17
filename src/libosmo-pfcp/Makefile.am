@@ -28,6 +28,7 @@ libosmo_pfcp_la_SOURCES = \
 	pfcp_ies_custom.c \
 	pfcp_msg.c \
 	pfcp_strs.c \
+	pfcp_cp_peer.c \
 	\
 	pfcp_ies_auto.c \
 	$(NULL)

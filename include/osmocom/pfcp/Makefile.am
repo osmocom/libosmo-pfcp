@@ -5,6 +5,7 @@ pfcp_HEADERS = \
 	pfcp_msg.h \
 	pfcp_proto.h \
 	pfcp_strs.h \
+	pfcp_cp_peer.h \
 	$(NULL)
 
 pfcpdir = $(includedir)/osmocom/pfcp
