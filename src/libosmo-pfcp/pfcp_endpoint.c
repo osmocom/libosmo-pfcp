@@ -167,7 +167,7 @@ static bool pfcp_queue_retrans(struct osmo_pfcp_queue_entry *qe)
 	if (!qe->n1_remaining)
 		return false;
 	/* re-schedule timer, keep in queue */
-	osmo_timer_schedule(&qe->t1, t1_ms/1000, t1_ms%1000);
+	osmo_timer_schedule(&qe->t1, t1_ms/1000, (t1_ms % 1000) * 1000);
 	return true;
 }
 
@@ -275,7 +275,7 @@ static int osmo_pfcp_endpoint_retrans_queue_add(struct osmo_pfcp_endpoint *endpo
 	talloc_set_destructor(qe, osmo_pfcp_queue_destructor);
 
 	osmo_timer_setup(&qe->t1, pfcp_queue_timer_cb, qe);
-	osmo_timer_schedule(&qe->t1, timeout/1000, timeout%1000);
+	osmo_timer_schedule(&qe->t1, timeout/1000, (timeout % 1000) * 1000);
 	return 0;
 }
 
