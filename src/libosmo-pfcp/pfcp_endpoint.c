@@ -242,8 +242,7 @@ int osmo_pfcp_endpoint_tx_data(struct osmo_pfcp_endpoint *ep, struct osmo_pfcp_m
 
 int osmo_pfcp_endpoint_tx_heartbeat_req(struct osmo_pfcp_endpoint *ep, const struct osmo_sockaddr *remote_addr)
 {
-	struct osmo_pfcp_msg *tx = osmo_pfcp_msg_alloc_tx(OTC_SELECT, remote_addr, NULL, NULL,
-							  OSMO_PFCP_MSGT_HEARTBEAT_REQ);
+	struct osmo_pfcp_msg *tx = osmo_pfcp_msg_alloc_tx_req(OTC_SELECT, remote_addr, OSMO_PFCP_MSGT_HEARTBEAT_REQ);
 	tx->ies.heartbeat_req.recovery_time_stamp = ep->recovery_time_stamp;
 	tx->h.sequence_nr = osmo_pfcp_next_seq_nr(&ep->seq_nr_state);
 	return osmo_pfcp_endpoint_tx_data(ep, tx);
@@ -326,7 +325,7 @@ static void osmo_pfcp_endpoint_handle_rx(struct osmo_pfcp_endpoint *ep, struct o
 
 	if (m->h.message_type == OSMO_PFCP_MSGT_HEARTBEAT_REQ) {
 		/* Directly answer with a Heartbeat Response. */
-		struct osmo_pfcp_msg *resp = osmo_pfcp_msg_alloc_tx(OTC_SELECT, NULL, NULL, m, OSMO_PFCP_MSGT_HEARTBEAT_RESP);
+		struct osmo_pfcp_msg *resp = osmo_pfcp_msg_alloc_tx_resp(OTC_SELECT, m, OSMO_PFCP_MSGT_HEARTBEAT_RESP);
 		resp->ies.heartbeat_resp.recovery_time_stamp = ep->recovery_time_stamp;
 		osmo_pfcp_endpoint_tx_data(ep, resp);
 		/* Still also dispatch the Rx event to the peer. */

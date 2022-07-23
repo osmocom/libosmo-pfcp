@@ -418,29 +418,37 @@ struct osmo_pfcp_msg *osmo_pfcp_msg_alloc_rx(void *ctx, const struct osmo_sockad
 	return rx;
 }
 
-struct osmo_pfcp_msg *osmo_pfcp_msg_alloc_tx(void *ctx, const struct osmo_sockaddr *remote_addr,
-					     const struct osmo_pfcp_ie_node_id *node_id,
-					     const struct osmo_pfcp_msg *in_reply_to,
-					     enum osmo_pfcp_message_type msg_type)
+static struct osmo_pfcp_msg *osmo_pfcp_msg_alloc_tx(void *ctx, const struct osmo_sockaddr *remote_addr,
+						    const struct osmo_pfcp_msg *in_reply_to,
+						    enum osmo_pfcp_message_type msg_type)
 {
 	struct osmo_pfcp_msg *tx;
 	if (!remote_addr && in_reply_to)
 		remote_addr = &in_reply_to->remote_addr;
 	OSMO_ASSERT(remote_addr);
 	tx = _osmo_pfcp_msg_alloc(ctx, remote_addr);
+	OSMO_ASSERT(tx);
 	tx->is_response = osmo_pfcp_msgtype_is_response(msg_type);
 	tx->h.message_type = msg_type;
 	if (in_reply_to)
 		tx->h.sequence_nr = in_reply_to->h.sequence_nr;
 	osmo_pfcp_msg_set_memb_ofs(tx);
-
-	/* Write the local node id data to the correct tx->ies.* member. */
-	if (node_id) {
-		struct osmo_pfcp_ie_node_id *tx_node_id = osmo_pfcp_msg_node_id(tx);
-		if (tx_node_id)
-			*tx_node_id = *node_id;
-	}
 	return tx;
+}
+
+/* Allocate a new PFCP Request message to be transmitted to a peer. */
+struct osmo_pfcp_msg *osmo_pfcp_msg_alloc_tx_req(void *ctx, const struct osmo_sockaddr *remote_addr,
+						 enum osmo_pfcp_message_type msg_type)
+{
+	return osmo_pfcp_msg_alloc_tx(ctx, remote_addr, NULL, msg_type);
+}
+
+/* Allocate a new PFCP Response message to be transmitted to a peer, as a response to a received PFCP message.
+ * Pass the received PFCP Request in in_reply_to; take the remote address and sequence nr from in_reply_to. */
+struct osmo_pfcp_msg *osmo_pfcp_msg_alloc_tx_resp(void *ctx, const struct osmo_pfcp_msg *in_reply_to,
+						  enum osmo_pfcp_message_type msg_type)
+{
+	return osmo_pfcp_msg_alloc_tx(ctx, NULL, in_reply_to, msg_type);
 }
 
 static int osmo_pfcp_msg_destructor(struct osmo_pfcp_msg *m)

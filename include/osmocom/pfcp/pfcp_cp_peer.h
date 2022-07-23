@@ -58,6 +58,9 @@ struct osmo_pfcp_cp_peer *osmo_pfcp_cp_peer_alloc(void *ctx,
 						  const struct osmo_sockaddr *remote_addr);
 int osmo_pfcp_cp_peer_associate(struct osmo_pfcp_cp_peer *cp_peer);
 bool osmo_pfcp_cp_peer_is_associated(const struct osmo_pfcp_cp_peer *cp_peer);
-struct osmo_pfcp_msg *osmo_pfcp_cp_peer_new_msg_tx(struct osmo_pfcp_cp_peer *cp_peer,
-						   enum osmo_pfcp_message_type msg_type);
+struct osmo_pfcp_msg *osmo_pfcp_cp_peer_new_req(struct osmo_pfcp_cp_peer *cp_peer,
+						enum osmo_pfcp_message_type msg_type);
+struct osmo_pfcp_msg *osmo_pfcp_cp_peer_new_resp(struct osmo_pfcp_cp_peer *cp_peer,
+						 const struct osmo_pfcp_msg *in_reply_to,
+						 enum osmo_pfcp_message_type msg_type);
 void osmo_pfcp_cp_peer_set_msg_ctx(struct osmo_pfcp_cp_peer *cp_peer, struct osmo_pfcp_msg *m);

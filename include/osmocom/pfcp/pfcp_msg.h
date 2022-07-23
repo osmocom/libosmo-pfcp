@@ -169,10 +169,10 @@ int osmo_pfcp_msg_decode_header(struct osmo_gtlv_load *tlv, struct osmo_pfcp_msg
 int osmo_pfcp_msg_decode_tlv(struct osmo_pfcp_msg *m, struct osmo_gtlv_load *tlv);
 
 struct osmo_pfcp_msg *osmo_pfcp_msg_alloc_rx(void *ctx, const struct osmo_sockaddr *remote_addr);
-struct osmo_pfcp_msg *osmo_pfcp_msg_alloc_tx(void *ctx, const struct osmo_sockaddr *remote_addr,
-					     const struct osmo_pfcp_ie_node_id *local_node_id,
-					     const struct osmo_pfcp_msg *in_reply_to,
-					     enum osmo_pfcp_message_type msg_type);
+struct osmo_pfcp_msg *osmo_pfcp_msg_alloc_tx_req(void *ctx, const struct osmo_sockaddr *remote_addr,
+						 enum osmo_pfcp_message_type msg_type);
+struct osmo_pfcp_msg *osmo_pfcp_msg_alloc_tx_resp(void *ctx, const struct osmo_pfcp_msg *in_reply_to,
+						  enum osmo_pfcp_message_type msg_type);
 
 void osmo_pfcp_msg_invalidate_ctx(struct osmo_pfcp_msg *m, struct osmo_fsm_inst *deleted_fi);
 

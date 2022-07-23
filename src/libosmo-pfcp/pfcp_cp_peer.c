@@ -160,7 +160,7 @@ static void pfcp_cp_peer_wait_assoc_setup_resp_onenter(struct osmo_fsm_inst *fi,
 	struct osmo_pfcp_cp_peer *cp_peer = fi->priv;
 	struct osmo_pfcp_msg *m;
 
-	m = osmo_pfcp_cp_peer_new_msg_tx(cp_peer, OSMO_PFCP_MSGT_ASSOC_SETUP_REQ);
+	m = osmo_pfcp_cp_peer_new_req(cp_peer, OSMO_PFCP_MSGT_ASSOC_SETUP_REQ);
 	m->ies.assoc_setup_req.recovery_time_stamp = cp_peer->ep->recovery_time_stamp;
 
 	m->ies.assoc_setup_req.cp_function_features_present = true;
@@ -391,14 +391,25 @@ void osmo_pfcp_cp_peer_set_msg_ctx(struct osmo_pfcp_cp_peer *cp_peer, struct osm
 	osmo_use_count_get_put(m->ctx.peer_use_count, m->ctx.peer_use_token, 1);
 }
 
-struct osmo_pfcp_msg *osmo_pfcp_cp_peer_new_msg_tx(struct osmo_pfcp_cp_peer *cp_peer,
-						   enum osmo_pfcp_message_type msg_type)
+/* Allocate a new PFCP request message to be sent to cp_peer->remote_addr. */
+struct osmo_pfcp_msg *osmo_pfcp_cp_peer_new_req(struct osmo_pfcp_cp_peer *cp_peer,
+						enum osmo_pfcp_message_type msg_type)
 {
 	struct osmo_pfcp_msg *m;
-	m = osmo_pfcp_msg_alloc_tx(cp_peer->ep, &cp_peer->remote_addr, &cp_peer->ep->cfg.local_node_id, NULL,
-				   msg_type);
-	if (!m)
-		return m;
+	m = osmo_pfcp_msg_alloc_tx_req(cp_peer->ep, &cp_peer->remote_addr, msg_type);
+	OSMO_ASSERT(m);
+	osmo_pfcp_cp_peer_set_msg_ctx(cp_peer, m);
+	return m;
+}
+
+/* Allocate a new PFCP response message to be sent to cp_peer->remote_addr. */
+struct osmo_pfcp_msg *osmo_pfcp_cp_peer_new_resp(struct osmo_pfcp_cp_peer *cp_peer,
+						 const struct osmo_pfcp_msg *in_reply_to,
+						 enum osmo_pfcp_message_type msg_type)
+{
+	struct osmo_pfcp_msg *m;
+	m = osmo_pfcp_msg_alloc_tx_resp(cp_peer->ep, in_reply_to, msg_type);
+	OSMO_ASSERT(m);
 	osmo_pfcp_cp_peer_set_msg_ctx(cp_peer, m);
 	return m;
 }
