@@ -57,22 +57,22 @@ struct osmo_pfcp_endpoint {
 
 /*! Entry of pfcp_endpoint message queue of PFCP messages, for re-transsions. */
 struct osmo_pfcp_queue_entry {
-	/* entry in per-peer list of messages waiting for a response */
+	/* entry in osmo_pfcp_endpoint.sent_requests or .sent_responses */
 	struct llist_head entry;
 	/* back-pointer */
 	struct osmo_pfcp_endpoint *ep;
 	/* message we have transmitted */
 	struct osmo_pfcp_msg *m;
-	/* T1 timer: How long to wait for response before retransmitting */
+	/* T1 timer: wait for response before retransmitting request / keep response in case the same request is
+	 * received again. */
 	struct osmo_timer_list t1;
 	/* N1: number of pending re-transmissions */
 	unsigned int n1_remaining;
 };
 
-/* Find a matching osmo_pfcp_queue_entry for given rx_hdr.
+/* Find a matching osmo_pfcp_queue_entry for given rx.
  * A returned osmo_pfcp_queue_entry is guaranteed to be a Response if rx is a Request, and vice versa. */
-static struct osmo_pfcp_queue_entry *
-osmo_pfcp_queue_find(struct llist_head *queue, const struct osmo_pfcp_msg *rx)
+static struct osmo_pfcp_queue_entry *osmo_pfcp_queue_find(struct llist_head *queue, const struct osmo_pfcp_msg *rx)
 {
 	struct osmo_pfcp_queue_entry *qe;
 	/* It's important to match only a Request to a Response and vice versa, because the remote peer makes its own
@@ -100,6 +100,9 @@ static int osmo_pfcp_queue_destructor(struct osmo_pfcp_queue_entry *qe)
 	return 0;
 }
 
+/* Global timer definitions for PFCP operation, provided for convenience. A caller of the PFCP API may decide to use
+ * these in osmo_pfcp_endpoint and own FSM implementations. To make these user configurable, it is convenient to add
+ * osmo_pfcp_tdefs as one of your program's osmo_tdef_group entries and call osmo_tdef_vty_init(). */
 struct osmo_tdef osmo_pfcp_tdefs[] = {
 	{ .T = OSMO_PFCP_TIMER_HEARTBEAT_REQ, .default_val = 15, .unit = OSMO_TDEF_S,
 	  .desc = "PFCP Heartbeat Request period, how long to wait between issuing requests"
