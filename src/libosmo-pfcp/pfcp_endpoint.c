@@ -32,6 +32,29 @@
 #include <osmocom/pfcp/pfcp_endpoint.h>
 #include <osmocom/pfcp/pfcp_msg.h>
 
+/* Send/receive PFCP messages to/from remote PFCP endpoints. */
+struct osmo_pfcp_endpoint {
+	struct osmo_pfcp_endpoint_cfg cfg;
+
+	/* PFCP socket */
+	struct osmo_fd pfcp_fd;
+
+	/* The time at which this endpoint last restarted, as seconds since unix epoch. */
+	uint32_t recovery_time_stamp;
+
+	/* State for determining the next sequence number for transmitting a request message */
+	uint32_t seq_nr_state;
+
+	/* All transmitted PFCP Request messages, list of osmo_pfcp_queue_entry.
+	 * For a transmitted Request message, wait for a matching Response from a remote peer; if none arrives,
+	 * retransmit (see n1 and t1_ms). */
+	struct llist_head sent_requests;
+	/* All transmitted PFCP Response messages, list of osmo_pfcp_queue_entry.
+	 * For a transmitted Response message, keep it in the queue for a fixed amount of time. If the peer retransmits
+	 * the original Request, do not dispatch the Request, but respond with the queued message directly. */
+	struct llist_head sent_responses;
+};
+
 /*! Entry of pfcp_endpoint message queue of PFCP messages, for re-transsions. */
 struct osmo_pfcp_queue_entry {
 	/* entry in per-peer list of messages waiting for a response */
@@ -103,18 +126,22 @@ struct osmo_tdef osmo_pfcp_tdefs[] = {
 	{}
 };
 
-struct osmo_pfcp_endpoint *osmo_pfcp_endpoint_create(void *ctx, void *priv)
+/* Allocate a PFCP endpoint. Copy cfg's content to the allocated endpoint struct. Set the recovery_time_stamp to the
+ * current time. */
+struct osmo_pfcp_endpoint *osmo_pfcp_endpoint_create(void *ctx, const struct osmo_pfcp_endpoint_cfg *cfg)
 {
 	struct osmo_pfcp_endpoint *ep = talloc_zero(ctx, struct osmo_pfcp_endpoint);
 	uint32_t unix_time;
 	if (!ep)
 		return NULL;
 
+	ep->cfg = *cfg;
+	if (!ep->cfg.tdefs)
+		ep->cfg.tdefs = osmo_pfcp_tdefs;
+
 	INIT_LLIST_HEAD(&ep->sent_requests);
 	INIT_LLIST_HEAD(&ep->sent_responses);
 
-	ep->cfg.tdefs = osmo_pfcp_tdefs;
-	ep->priv = priv;
 	ep->pfcp_fd.fd = -1;
 
 	/* time() returns seconds since 1970 (UNIX epoch), but the recovery_time_stamp is coded in the NTP format, which is
@@ -343,8 +370,8 @@ static void osmo_pfcp_endpoint_handle_rx(struct osmo_pfcp_endpoint *ep, struct o
 
 		/* Populate message context to point at peer and session, if applicable.
 		 * With that context applied, log message rx. */
-		if (ep->set_msg_ctx)
-			ep->set_msg_ctx(ep, m, NULL);
+		if (ep->cfg.set_msg_ctx_cb)
+			ep->cfg.set_msg_ctx_cb(ep, m, NULL);
 		OSMO_LOG_PFCP_MSG(m, LOGL_INFO, "received retransmission of earlier request\n");
 
 		/* Also log on the earlier PFCP msg that it is resent */
@@ -362,8 +389,8 @@ static void osmo_pfcp_endpoint_handle_rx(struct osmo_pfcp_endpoint *ep, struct o
 
 	/* Populate message context to point at peer and session, if applicable.
 	 * With that context applied, log message rx. */
-	if (ep->set_msg_ctx)
-		ep->set_msg_ctx(ep, m, req);
+	if (ep->cfg.set_msg_ctx_cb)
+		ep->cfg.set_msg_ctx_cb(ep, m, req);
 	OSMO_LOG_PFCP_MSG(m, LOGL_INFO, "received\n");
 
 	if (req && req->ctx.resp_cb) {
@@ -373,12 +400,12 @@ static void osmo_pfcp_endpoint_handle_rx(struct osmo_pfcp_endpoint *ep, struct o
 		if (rc != 1) {
 			dispatch_rx = false;
 			OSMO_LOG_PFCP_MSG(m, LOGL_DEBUG,
-					  "response handled by m->resp_cb(), not dispatching to rx_msg()\n");
+					  "response handled by m->resp_cb(), not dispatching to rx_msg_cb()\n");
 		}
 	}
 
 	if (dispatch_rx)
-		ep->rx_msg(ep, m, req);
+		ep->cfg.rx_msg_cb(ep, m, req);
 	if (req)
 		osmo_pfcp_queue_del(prev_msg);
 }
@@ -402,7 +429,7 @@ static int osmo_pfcp_fd_cb(struct osmo_fd *ofd, unsigned int what)
 			return -EIO;
 		msgb_put(msg, rc);
 
-		OSMO_ASSERT(ep->rx_msg);
+		OSMO_ASSERT(ep->cfg.rx_msg_cb);
 
 		/* This may be a bundle of PFCP messages. Parse and receive each message received, by shifting l4h
 		 * through the message bundle. */
@@ -436,8 +463,8 @@ int osmo_pfcp_endpoint_bind(struct osmo_pfcp_endpoint *ep)
 	/* close the existing socket, if any */
 	osmo_pfcp_endpoint_close(ep);
 
-	if (!ep->rx_msg) {
-		LOGP(DLPFCP, LOGL_ERROR, "missing rx_msg cb at osmo_pfcp_endpoint\n");
+	if (!ep->cfg.rx_msg_cb) {
+		LOGP(DLPFCP, LOGL_ERROR, "missing cfg.rx_msg_cb at osmo_pfcp_endpoint\n");
 		return -EINVAL;
 	}
 
@@ -482,4 +509,38 @@ void osmo_pfcp_endpoint_invalidate_ctx(struct osmo_pfcp_endpoint *ep, struct osm
 		osmo_pfcp_msg_invalidate_ctx(qe->m, deleted_fi);
 	llist_for_each_entry(qe, &ep->sent_responses, entry)
 		osmo_pfcp_msg_invalidate_ctx(qe->m, deleted_fi);
+}
+
+/* Return the cfg for an endpoint, guaranteed to return non-NULL for a valid ep. */
+const struct osmo_pfcp_endpoint_cfg *osmo_pfcp_endpoint_get_cfg(const struct osmo_pfcp_endpoint *ep)
+{
+	return &ep->cfg;
+}
+
+/* Shorthand for &osmo_pfcp_endpoint_get_cfg(ep)->priv */
+void *osmo_pfcp_endpoint_get_priv(const struct osmo_pfcp_endpoint *ep)
+{
+	return ep->cfg.priv;
+}
+
+uint32_t osmo_pfcp_endpoint_get_recovery_timestamp(const struct osmo_pfcp_endpoint *ep)
+{
+	return ep->recovery_time_stamp;
+}
+
+/* Shorthand for &osmo_pfcp_endpoint_get_cfg(ep)->local_addr */
+const struct osmo_sockaddr *osmo_pfcp_endpoint_get_local_addr(const struct osmo_pfcp_endpoint *ep)
+{
+	return &ep->cfg.local_addr;
+}
+
+void osmo_pfcp_endpoint_set_seq_nr_state(struct osmo_pfcp_endpoint *ep, uint32_t seq_nr_state)
+{
+	ep->seq_nr_state = seq_nr_state;
+}
+
+/* Return true when the retransmission queues contain any PFCP messages, false when the queues are empty. */
+bool osmo_pfcp_endpoint_retrans_queue_is_busy(const struct osmo_pfcp_endpoint *ep)
+{
+	return !(llist_empty(&ep->sent_requests) && llist_empty(&ep->sent_responses));
 }

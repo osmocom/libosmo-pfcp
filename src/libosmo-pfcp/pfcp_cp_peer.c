@@ -161,7 +161,7 @@ static void pfcp_cp_peer_wait_assoc_setup_resp_onenter(struct osmo_fsm_inst *fi,
 	struct osmo_pfcp_msg *m;
 
 	m = osmo_pfcp_cp_peer_new_req(cp_peer, OSMO_PFCP_MSGT_ASSOC_SETUP_REQ);
-	m->ies.assoc_setup_req.recovery_time_stamp = cp_peer->ep->recovery_time_stamp;
+	m->ies.assoc_setup_req.recovery_time_stamp = osmo_pfcp_endpoint_get_recovery_timestamp(cp_peer->ep);
 
 	m->ies.assoc_setup_req.cp_function_features_present = true;
 	osmo_pfcp_bits_set(m->ies.assoc_setup_req.cp_function_features.bits, OSMO_PFCP_CP_FEAT_BUNDL, true);
