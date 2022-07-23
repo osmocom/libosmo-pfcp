@@ -78,10 +78,10 @@ static int osmo_pfcp_queue_destructor(struct osmo_pfcp_queue_entry *qe)
 }
 
 struct osmo_tdef osmo_pfcp_tdefs[] = {
-	{ .T = OSMO_PFCP_MSGT_HEARTBEAT_REQ, .default_val = 15, .unit = OSMO_TDEF_S,
+	{ .T = OSMO_PFCP_TIMER_HEARTBEAT_REQ, .default_val = 15, .unit = OSMO_TDEF_S,
 	  .desc = "PFCP Heartbeat Request period, how long to wait between issuing requests"
 	},
-	{ .T = OSMO_PFCP_MSGT_HEARTBEAT_RESP, .default_val = 15, .unit = OSMO_TDEF_S,
+	{ .T = OSMO_PFCP_TIMER_HEARTBEAT_RESP, .default_val = 15, .unit = OSMO_TDEF_S,
 	  .desc = "PFCP Heartbeat Response timeout, the time after which to regard a non-responding peer as disconnected"
 	},
 	{ .T = OSMO_PFCP_TIMER_GRACEFUL_REL, .default_val = 15, .unit = OSMO_TDEF_S,
