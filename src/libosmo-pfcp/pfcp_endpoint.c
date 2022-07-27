@@ -181,17 +181,18 @@ static bool pfcp_queue_retrans(struct osmo_pfcp_queue_entry *qe)
 	struct osmo_pfcp_msg *m = qe->m;
 	int rc;
 
-	/* re-transmit */
-	if (qe->n1_remaining)
-		qe->n1_remaining--;
-	OSMO_LOG_PFCP_MSG(m, LOGL_INFO, "re-sending (%u attempts remaining)\n", qe->n1_remaining);
-
-	rc = osmo_pfcp_endpoint_tx_data_no_logging(endpoint, m);
-	/* If encoding failed, it cannot ever succeed. Drop the queue entry. */
-	if (rc)
-		return false;
 	/* if no more attempts remaining, drop from queue */
 	if (!qe->n1_remaining)
+		return false;
+
+	/* re-transmit */
+	qe->n1_remaining--;
+	OSMO_LOG_PFCP_MSG(m, LOGL_INFO, "re-sending (%u attempts remaining after this)\n", qe->n1_remaining);
+
+	rc = osmo_pfcp_endpoint_tx_data_no_logging(endpoint, m);
+	/* If encoding failed, it cannot ever succeed. Drop the queue entry. (Error logging already taken care of in
+	 * osmo_pfcp_endpoint_tx_data_no_logging().) */
+	if (rc)
 		return false;
 	/* re-schedule timer, keep in queue */
 	osmo_timer_schedule(&qe->t1, t1_ms/1000, (t1_ms % 1000) * 1000);
