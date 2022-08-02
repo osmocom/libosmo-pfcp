@@ -85,7 +85,7 @@ AC_MSG_RESULT([CPPFLAGS="$CPPFLAGS"])
 dnl Generate the output
 AM_CONFIG_HEADER(config.h)
 
-AC_OUTPUT(
+AC_CONFIG_FILES([
     libosmo-gtlv.pc
     libosmo-pfcp.pc
     include/Makefile
@@ -104,4 +104,5 @@ AC_OUTPUT(
     doc/Makefile
     doc/charts/Makefile
     contrib/Makefile
-    Makefile)
+    Makefile])
+AC_OUTPUT
