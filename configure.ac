@@ -6,6 +6,7 @@ dnl *This* is the root dir, even if an install-sh exists in ../ or ../../
 AC_CONFIG_AUX_DIR([.])
 
 AM_INIT_AUTOMAKE([dist-bzip2])
+AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_TESTDIR(tests)
 
 CFLAGS="$CFLAGS -std=gnu11"
