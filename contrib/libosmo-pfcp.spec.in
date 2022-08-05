@@ -1,7 +1,3 @@
-## Disable LTO for now since it breaks compilation of the tests
-## https://osmocom.org/issues/4113
-%define _lto_cflags %{nil}
-
 Name:           libosmo-pfcp
 Version:        @VERSION@
 Release:        0
