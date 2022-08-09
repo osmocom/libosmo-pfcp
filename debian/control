@@ -1,8 +1,8 @@
-Source: osmo-upf
-Section: net
-Priority: extra
-Maintainer: Osmocom team <openbsc@lists.osmocom.org>
-Build-Depends: debhelper (>=9),
+Source: libosmo-pfcp
+Section: libs
+Priority: optional
+Maintainer: Osmocom team <osmocom-net-gprs@lists.osmocom.org>
+Build-Depends: debhelper (>=10),
                dh-autoreconf,
                autotools-dev,
                autoconf,
@@ -10,33 +10,89 @@ Build-Depends: debhelper (>=9),
                automake,
                libtool,
                pkg-config,
-               python3-minimal,
-               libtalloc-dev,
-               libosmocore-dev (>= 1.6.0),
-               osmo-gsm-manuals-dev (>= 1.2.0)
+               libosmocore-dev (>= 1.7.0),
+               libtalloc-dev (>= 2.1.0)
 Standards-Version: 3.9.8
-Vcs-Git: git://git.osmocom.org/osmo-upf.git
-Vcs-Browser: https://git.osmocom.org/osmo-upf/
-Homepage: https://projects.osmocom.org/projects/osmo-upf
+Vcs-Git: https://gitea.osmocom.org/osmocom/libosmo-pfcp
+Vcs-Browser: https://gitea.osmocom.org/osmocom/libosmo-pfcp
+Homepage: https://projects.osmocom.org/projects/libosmo-pfcp
 
-Package: osmo-upf
+Package: libosmo-pfcp
+Section: libs
 Architecture: any
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: OsmoUPF: Osmocom User Plane Function
+Depends: ${misc:Depends},
+         libosmo-gtlv0 (= ${binary:Version}),
+         libosmo-pfcp0 (= ${binary:Version})
+Description: Osmocom PFCP protocol implementation (metapackage)
+ Install Osmocom PFCP and generic TLV protocol libraries.
 
-Package: osmo-upf-dbg
-Section: debug
+Package: libosmo-gtlv0
+Section: libs
 Architecture: any
 Multi-Arch: same
-Depends: osmo-upf (= ${binary:Version}), ${misc:Depends}
-Description: OsmoUPF: Osmocom User Plane Function
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libosmocore-dev (>= 1.7.0),
+         libtalloc-dev (>= 2.1.0)
+Pre-Depends: ${misc:Pre-Depends}
+Description: Generic TLV and TLIV protocol support
+ Decoding, encoding and logging of protocols using a Tag-Length-Value and/or
+ Tag-Length-Instance-Value structure.
 
-Package: osmo-upf-doc
-Architecture: all
-Section: doc
-Priority: optional
-Depends: ${misc:Depends}
-Description: ${misc:Package} PDF documentation
- Various manuals: user manual, VTY reference manual and/or
- protocol/interface manuals.
+Package: libosmo-gtlv-dev
+Architecture: any
+Multi-Arch: same
+Section: libdevel
+Depends: ${misc:Depends},
+         libosmo-gtlv0 (= ${binary:Version})
+Description: Development headers for libosmo-gtlv
+ libosmo-gtlv implements decoding, encoding and logging of protocols using a
+ Tag-Length-Value and/or Tag-Length-Instance-Value structure. This package in
+ particular contains the files for compiling a program using this library.
+
+Package: libosmo-gtlv-dbg
+Architecture: any
+Multi-Arch: same
+Section: debug
+Priority: extra
+Depends: ${misc:Depends},
+         libosmo-gtlv0 (= ${binary:Version})
+Description: Debug symbols for libosmo-gtlv
+ libosmo-gtlv implements decoding, encoding and logging of protocols using a
+ Tag-Length-Value and/or Tag-Length-Instance-Value structure. This package in
+ particular contains the debug symbols for this library.
+
+Package: libosmo-pfcp0
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Description: PFCP protocol support
+ Decoding, encoding and endpoint implementation of the Packet Forwarding Control Protocol
+ (3GPP TS 29.244).
+
+Package: libosmo-pfcp-dev
+Architecture: any
+Multi-Arch: same
+Section: libdevel
+Depends: ${misc:Depends},
+         libosmo-pfcp0 (= ${binary:Version})
+Description: Development headers for libosmo-pfcp
+ libosmo-pfcp implements decoding, encoding and endpoint implementation of the
+ Packet Forwarding Control Protocol (3GPP TS 29.244). This package in particular
+ contains the files for compiling a program using this library.
+
+Package: libosmo-pfcp-dbg
+Architecture: any
+Multi-Arch: same
+Section: debug
+Priority: extra
+Depends: ${misc:Depends},
+         libosmo-pfcp0 (= ${binary:Version})
+Description: Debug symbols for libosmo-pfcp
+ libosmo-pfcp implements decoding, encoding and endpoint implementation of the
+ Packet Forwarding Control Protocol (3GPP TS 29.244). This package in particular
+ contains the debug symbols for this library.
