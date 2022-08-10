@@ -12,7 +12,7 @@ GIT Repository
 
 You can clone from the official libosmo-pfcp.git repository using
 
-	git clone git://git.osmocom.org/libosmo-pfcp.git
+	git clone https://gitea.osmocom.org/osmocom/libosmo-pfcp
 
 To submit patches, see "Contributing" below.
 
