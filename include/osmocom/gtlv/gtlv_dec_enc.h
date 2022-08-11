@@ -182,9 +182,10 @@ struct osmo_gtlv_coding {
  */
 typedef void (*osmo_gtlv_err_cb)(void *data, void *decoded_struct, const char *file, int line, const char *fmt, ...);
 
-int osmo_gtlvs_decode(void *decoded_struct, unsigned int obj_ofs, struct osmo_gtlv_load *gtlv, bool tlv_ordered,
-		     const struct osmo_gtlv_coding *ie_coding,
-		     osmo_gtlv_err_cb err_cb, void *err_cb_data, const struct value_string *iei_strs);
+int osmo_gtlvs_decode(void *decoded_struct, size_t decoded_struct_size,
+		      unsigned int obj_ofs, struct osmo_gtlv_load *gtlv, bool tlv_ordered,
+		      const struct osmo_gtlv_coding *ie_coding,
+		      osmo_gtlv_err_cb err_cb, void *err_cb_data, const struct value_string *iei_strs);
 
 int osmo_gtlvs_encode(struct osmo_gtlv_put *gtlv, const void *decoded_struct, size_t decoded_struct_size,
 		      unsigned int obj_ofs, const struct osmo_gtlv_coding *ie_coding, osmo_gtlv_err_cb err_cb,

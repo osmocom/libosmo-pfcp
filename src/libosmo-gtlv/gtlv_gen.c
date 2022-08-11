@@ -381,7 +381,8 @@ static void write_c()
 		"	%s message_type,\n"
 		"	osmo_gtlv_err_cb err_cb, void *err_cb_data, const struct value_string *iei_strs)\n"
 		"{\n"
-		"	return osmo_gtlvs_decode(dst, 0, gtlv, tlv_ordered, %s_get_msg_coding(message_type), err_cb, err_cb_data, iei_strs);\n"
+		"	return osmo_gtlvs_decode(dst, sizeof(*dst), 0, gtlv, tlv_ordered, %s_get_msg_coding(message_type),\n"
+		"		err_cb, err_cb_data, iei_strs);\n"
 		"}\n",
 		g_cfg->proto_name, g_cfg->proto_name, g_cfg->message_type_enum ? : "int", g_cfg->proto_name);
 	printf("\n"

@@ -396,7 +396,8 @@ void test_enc_dec(const char *label, const struct osmo_gtlv_cfg *cfg, bool order
 			.cfg = cfg,
 			.src = { put.dst->data, put.dst->len },
 		};
-		rc = osmo_gtlvs_decode(&parsed, 0, &load, ordered, msg_ie_coding, err_cb, &verify_err_cb_data, tag_names);
+		rc = osmo_gtlvs_decode(&parsed, sizeof(parsed), 0, &load, ordered, msg_ie_coding,
+				       err_cb, &verify_err_cb_data, tag_names);
 		printf("osmo_gtlvs_decode() rc = %d\n", rc);
 		printf("decoded: %s\n", decoded_msg_to_str(&parsed));
 		if (strcmp(decoded_msg_to_str(orig), decoded_msg_to_str(&parsed))) {
