@@ -158,8 +158,8 @@ static unsigned int pfcp_header_get_message_length(const struct osmo_pfcp_header
 static int enc_pfcp_header(struct msgb *msg, const struct osmo_pfcp_msg *m)
 {
 	const struct osmo_pfcp_header_parsed *parsed = &m->h;
-	struct osmo_pfcp_header_seid *h_seid;
-	struct osmo_pfcp_header_no_seid *h_no_seid;
+	struct osmo_pfcp_header_seid *h_seid = NULL;
+	struct osmo_pfcp_header_no_seid *h_no_seid = NULL;
 	struct osmo_pfcp_header_common *c;
 	int rc;
 

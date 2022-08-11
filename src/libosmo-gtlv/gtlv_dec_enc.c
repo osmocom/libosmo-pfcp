@@ -71,7 +71,7 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, unsigned int obj_of
 {
 	void *obj = MEMB(decoded_struct, obj_ofs);
 	const struct osmo_gtlv_coding *iec;
-	unsigned int *multi_count_p;
+	unsigned int *multi_count_p = NULL;
 
 	/* To check for presence of mandatory IEs, need to keep a flag stack of seen ie_coding entries. This array has
 	 * to have at least the nr of entries that the ie_coding array has. Let's allow up to this many ie_coding
