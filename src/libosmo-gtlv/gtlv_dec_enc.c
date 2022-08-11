@@ -28,9 +28,6 @@
 
 #include <osmocom/gtlv/gtlv_dec_enc.h>
 
-/* Reverse offsetof(): return the address of the struct member for a given osmo_gtlv_msg and member ofs_foo value. */
-#define MEMB(M, MEMB_OFS) ((void *)((char *)(M) + (MEMB_OFS)))
-
 #define RETURN_ERROR(RC, TAG_INST, FMT, ARGS...) \
 	do {\
 		if (err_cb) { \
@@ -486,19 +483,23 @@ int osmo_gtlvs_encode(struct osmo_gtlv_put *gtlv, const void *decoded_struct, si
  * \param[in] iei_strs  value_string array to give IEI names in tag headers, or NULL.
  * \return number of characters that would be written if the buffer is large enough, like snprintf().
  */
-int osmo_gtlvs_encode_to_str_buf(char *buf, size_t buflen, const void *decoded_struct, unsigned int obj_ofs,
-				const struct osmo_gtlv_coding *ie_coding, const struct value_string *iei_strs)
+int osmo_gtlvs_encode_to_str_buf(char *buf, size_t buflen,
+				 const void *decoded_struct, size_t decoded_struct_size, unsigned int obj_ofs,
+				 const struct osmo_gtlv_coding *ie_coding, const struct value_string *iei_strs)
 {
 	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
 
-	void *obj = MEMB(decoded_struct, obj_ofs);
+	const void *obj = membof_const(decoded_struct, decoded_struct_size, obj_ofs);
+	size_t obj_maxlen = decoded_struct_size - obj_ofs;
 
 	if (!ie_coding)
 		return -ENOTSUP;
 
 	for (; !osmo_gtlv_coding_end(ie_coding); ie_coding++) {
-		bool *presence_flag_p = ie_coding->has_presence_flag ? MEMB(obj, ie_coding->presence_flag_ofs) : NULL;
-		unsigned int *multi_count_p = ie_coding->has_count ? MEMB(obj, ie_coding->count_ofs) : NULL;
+		const bool *presence_flag_p = ie_coding->has_presence_flag ?
+			membof_const(obj, obj_maxlen, ie_coding->presence_flag_ofs) : NULL;
+		const unsigned int *multi_count_p = ie_coding->has_count ?
+			membof_const(obj, obj_maxlen, ie_coding->count_ofs) : NULL;
 		unsigned int n;
 		unsigned int i;
 
@@ -531,12 +532,14 @@ int osmo_gtlvs_encode_to_str_buf(char *buf, size_t buflen, const void *decoded_s
 
 			if (ie_coding->nested_ies) {
 				OSMO_STRBUF_PRINTF(sb, "{");
-				OSMO_STRBUF_APPEND(sb, osmo_gtlvs_encode_to_str_buf, decoded_struct, obj_ofs + memb_ofs,
+				OSMO_STRBUF_APPEND(sb, osmo_gtlvs_encode_to_str_buf,
+						   decoded_struct, decoded_struct_size, obj_ofs + memb_ofs,
 						   ie_coding->nested_ies, iei_strs);
 				OSMO_STRBUF_PRINTF(sb, " }");
 			} else {
 				if (ie_coding->enc_to_str_func)
-					OSMO_STRBUF_APPEND(sb, ie_coding->enc_to_str_func, MEMB(obj, memb_ofs));
+					OSMO_STRBUF_APPEND(sb, ie_coding->enc_to_str_func,
+							   membof_const(obj, obj_maxlen, memb_ofs));
 				else
 					OSMO_STRBUF_PRINTF(sb, "(enc_to_str_func==NULL)");
 			}
@@ -557,8 +560,10 @@ int osmo_gtlvs_encode_to_str_buf(char *buf, size_t buflen, const void *decoded_s
  * \param[in] iei_strs  value_string array to give IEI names in tag headers, or NULL.
  * \return human readable string.
  */
-char *osmo_gtlvs_encode_to_str_c(void *ctx, const void *decoded_struct, unsigned int obj_ofs,
-				const struct osmo_gtlv_coding *ie_coding, const struct value_string *iei_strs)
+char *osmo_gtlvs_encode_to_str_c(void *ctx,
+				 const void *decoded_struct, size_t decoded_struct_size, unsigned int obj_ofs,
+				 const struct osmo_gtlv_coding *ie_coding, const struct value_string *iei_strs)
 {
-	OSMO_NAME_C_IMPL(ctx, 256, "ERROR", osmo_gtlvs_encode_to_str_buf, decoded_struct, obj_ofs, ie_coding, iei_strs)
+	OSMO_NAME_C_IMPL(ctx, 256, "ERROR", osmo_gtlvs_encode_to_str_buf, decoded_struct, decoded_struct_size,
+			 obj_ofs, ie_coding, iei_strs)
 }

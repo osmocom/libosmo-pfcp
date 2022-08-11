@@ -397,7 +397,7 @@ static void write_c()
 		"int %s_ies_encode_to_str(char *buf, size_t buflen, const union %s_ies *src,\n"
 		"	%s message_type, const struct value_string *iei_strs)\n"
 		"{\n"
-		"	return osmo_gtlvs_encode_to_str_buf(buf, buflen, src, 0, %s_get_msg_coding(message_type), iei_strs);\n"
+		"	return osmo_gtlvs_encode_to_str_buf(buf, buflen, src, sizeof(*src), 0, %s_get_msg_coding(message_type), iei_strs);\n"
 		"}\n",
 		g_cfg->proto_name, g_cfg->proto_name, g_cfg->message_type_enum ? : "int", g_cfg->proto_name);
 }

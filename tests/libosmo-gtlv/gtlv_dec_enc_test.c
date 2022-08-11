@@ -286,7 +286,7 @@ struct osmo_gtlv_coding msg_ie_coding[] = {
 
 char *decoded_msg_to_str(const struct decoded_msg *m)
 {
-	return osmo_gtlvs_encode_to_str_c(ctx, m, 0, msg_ie_coding, tag_names);
+	return osmo_gtlvs_encode_to_str_c(ctx, m, sizeof(*m), 0, msg_ie_coding, tag_names);
 }
 
 

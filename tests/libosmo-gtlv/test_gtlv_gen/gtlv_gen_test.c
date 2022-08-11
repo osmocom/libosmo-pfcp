@@ -203,8 +203,8 @@ int myproto_msg_to_str_buf(char *buf, size_t buflen, const struct myproto_msg *m
 {
 	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
 	OSMO_STRBUF_PRINTF(sb, "%s={", get_value_string(myproto_msg_type_names, m->type));
-	OSMO_STRBUF_APPEND(sb, osmo_gtlvs_encode_to_str_buf, &m->ies, 0, myproto_get_msg_coding(m->type),
-			   myproto_iei_names);
+	OSMO_STRBUF_APPEND(sb, osmo_gtlvs_encode_to_str_buf, &m->ies, sizeof(m->ies), 0,
+			   myproto_get_msg_coding(m->type), myproto_iei_names);
 	OSMO_STRBUF_PRINTF(sb, " }");
 	return sb.chars_needed;
 
