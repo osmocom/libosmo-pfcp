@@ -1,0 +1,5 @@
+usr/include/osmocom/gtlv
+usr/lib/*/libosmo-gtlv*.a
+usr/lib/*/libosmo-gtlv*.so
+usr/lib/*/libosmo-gtlv*.la
+usr/lib/*/pkgconfig/libosmo-gtlv.pc

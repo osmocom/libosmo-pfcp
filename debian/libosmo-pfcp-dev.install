@@ -1,0 +1,5 @@
+usr/include/osmocom/pfcp
+usr/lib/*/libosmo-pfcp*.a
+usr/lib/*/libosmo-pfcp*.so
+usr/lib/*/libosmo-pfcp*.la
+usr/lib/*/pkgconfig/libosmo-pfcp.pc
