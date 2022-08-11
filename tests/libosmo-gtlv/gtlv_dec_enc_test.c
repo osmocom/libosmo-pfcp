@@ -94,7 +94,13 @@ struct decoded_msg {
 	struct baz baz;
 
 	unsigned int repeat_int_count;
-	int repeat_int[32];
+	int repeat_int[3];
+
+	unsigned int repeat_int2_count;
+	int repeat_int2[2];
+
+	bool repeat_int3_present;
+	unsigned int repeat_int3;
 
 	unsigned int repeat_struct_count;
 	struct repeat repeat_struct[32];
@@ -264,6 +270,26 @@ struct osmo_gtlv_coding msg_ie_coding[] = {
 		.count_max = ARRAY_SIZE(((struct decoded_msg *)0)->repeat_int),
 	},
 	{
+		.ti = { TAG_REPEAT_INT },
+		.dec_func = dec_u16,
+		.enc_func = enc_u16,
+		.enc_to_str_func = enc_to_str_u16,
+		.memb_ofs = offsetof(struct decoded_msg, repeat_int2),
+		.memb_array_pitch = OSMO_MEMB_ARRAY_PITCH(struct decoded_msg, repeat_int2),
+		.has_count = true,
+		.count_ofs = offsetof(struct decoded_msg, repeat_int2_count),
+		.count_max = ARRAY_SIZE(((struct decoded_msg *)0)->repeat_int2),
+	},
+	{
+		.ti = { TAG_REPEAT_INT },
+		.dec_func = dec_u16,
+		.enc_func = enc_u16,
+		.enc_to_str_func = enc_to_str_u16,
+		.memb_ofs = offsetof(struct decoded_msg, repeat_int3),
+		.has_presence_flag = true,
+		.presence_flag_ofs = offsetof(struct decoded_msg, repeat_int3_present),
+	},
+	{
 		.ti = { TAG_REPEAT_STRUCT },
 		.dec_func = dec_repeat_struct,
 		.enc_func = enc_repeat_struct,
@@ -284,11 +310,88 @@ struct osmo_gtlv_coding msg_ie_coding[] = {
 	{}
 };
 
-char *decoded_msg_to_str(const struct decoded_msg *m)
-{
-	return osmo_gtlvs_encode_to_str_c(ctx, m, sizeof(*m), 0, msg_ie_coding, tag_names);
-}
+/* Same as msg_ie_coding, but with different ordering of the REPEAT_INT IEIs: in msg_ie_coding, the three separate
+ * REPEAT_INT tags follow directly after each other, while in msg_ie_coding2, other tags appear in-between. */
+struct osmo_gtlv_coding msg_ie_coding2[] = {
+	{
+		.ti = { TAG_FOO },
+		.dec_func = dec_u16,
+		.enc_func = enc_u16,
+		.enc_to_str_func = enc_to_str_u16,
+		.memb_ofs = offsetof(struct decoded_msg, foo),
+	},
+	{
+		.ti = { TAG_BAR },
+		.dec_func = dec_bar,
+		.enc_func = enc_bar,
+		.enc_to_str_func = enc_to_str_bar,
+		.memb_ofs = offsetof(struct decoded_msg, bar),
+	},
+	{
+		.ti = { TAG_BAZ },
+		.dec_func = dec_baz,
+		.enc_func = enc_baz,
+		.enc_to_str_func = enc_to_str_baz,
+		.memb_ofs = offsetof(struct decoded_msg, baz),
+		.has_presence_flag = true,
+		.presence_flag_ofs = offsetof(struct decoded_msg, baz_present),
+	},
+	{
+		.ti = { TAG_REPEAT_INT },
+		.dec_func = dec_u16,
+		.enc_func = enc_u16,
+		.enc_to_str_func = enc_to_str_u16,
+		.memb_ofs = offsetof(struct decoded_msg, repeat_int),
+		.memb_array_pitch = OSMO_MEMB_ARRAY_PITCH(struct decoded_msg, repeat_int),
+		.has_count = true,
+		.count_ofs = offsetof(struct decoded_msg, repeat_int_count),
+		.count_max = ARRAY_SIZE(((struct decoded_msg *)0)->repeat_int),
+	},
+	{
+		.ti = { TAG_REPEAT_STRUCT },
+		.dec_func = dec_repeat_struct,
+		.enc_func = enc_repeat_struct,
+		.enc_to_str_func = enc_to_str_repeat_struct,
+		.memb_ofs = offsetof(struct decoded_msg, repeat_struct),
+		.memb_array_pitch = OSMO_MEMB_ARRAY_PITCH(struct decoded_msg, repeat_struct),
+		.has_count = true,
+		.count_ofs = offsetof(struct decoded_msg, repeat_struct_count),
+		.count_max = ARRAY_SIZE(((struct decoded_msg *)0)->repeat_struct),
+	},
+	{
+		.ti = { TAG_REPEAT_INT },
+		.dec_func = dec_u16,
+		.enc_func = enc_u16,
+		.enc_to_str_func = enc_to_str_u16,
+		.memb_ofs = offsetof(struct decoded_msg, repeat_int2),
+		.memb_array_pitch = OSMO_MEMB_ARRAY_PITCH(struct decoded_msg, repeat_int2),
+		.has_count = true,
+		.count_ofs = offsetof(struct decoded_msg, repeat_int2_count),
+		.count_max = ARRAY_SIZE(((struct decoded_msg *)0)->repeat_int2),
+	},
+	{
+		.ti = { TAG_NEST },
+		.memb_ofs = offsetof(struct decoded_msg, nest),
+		.nested_ies = nested_inner_msg_ies,
+		.has_presence_flag = true,
+		.presence_flag_ofs = offsetof(struct decoded_msg, nest_present),
+	},
+	{
+		.ti = { TAG_REPEAT_INT },
+		.dec_func = dec_u16,
+		.enc_func = enc_u16,
+		.enc_to_str_func = enc_to_str_u16,
+		.memb_ofs = offsetof(struct decoded_msg, repeat_int3),
+		.has_presence_flag = true,
+		.presence_flag_ofs = offsetof(struct decoded_msg, repeat_int3_present),
+	},
+	{}
+};
 
+char *decoded_msg_to_str(const struct decoded_msg *m, const struct osmo_gtlv_coding *iec)
+{
+	return osmo_gtlvs_encode_to_str_c(ctx, m, sizeof(*m), 0, iec, tag_names);
+}
 
 const struct decoded_msg enc_dec_tests[] = {
 	{
@@ -317,6 +420,38 @@ const struct decoded_msg enc_dec_tests[] = {
 
 		.repeat_int_count = 3,
 		.repeat_int = { 1, 2, 0x7fff },
+	},
+	{
+		.foo = 23,
+		.bar = { "twentythree" },
+
+		.repeat_int_count = 3,
+		.repeat_int = { 1, 2, 0x7fff },
+
+		.repeat_struct_count = 1,
+		.repeat_struct = {
+			{
+				.v_int = 1001,
+				.v_bool = true,
+				.v_enum = R_A,
+			},
+		},
+
+		.repeat_int2_count = 2,
+		.repeat_int2 = { 23, 42 },
+
+		.nest_present = true,
+		.nest = {
+			.foo = 42,
+			.bar = { "fortytwo" },
+			.baz = {
+				.v_int = 4242,
+				.v_bool = false,
+			},
+		},
+
+		.repeat_int3_present = true,
+		.repeat_int3 = 423,
 	},
 	{
 		.foo = 23,
@@ -370,7 +505,7 @@ void err_cb(void *data, void *decoded_struct, const char *file, int line, const 
 	va_end(args);
 }
 
-void test_enc_dec(const char *label, const struct osmo_gtlv_cfg *cfg, bool ordered)
+void test_enc_dec(const char *label, const struct osmo_gtlv_cfg *cfg, const struct osmo_gtlv_coding *iec, bool ordered)
 {
 	int i;
 	for (i = 0; i < ARRAY_SIZE(enc_dec_tests); i++) {
@@ -381,13 +516,13 @@ void test_enc_dec(const char *label, const struct osmo_gtlv_cfg *cfg, bool order
 		struct osmo_gtlv_put put;
 
 		printf("\n=== start %s %s[%d]\n", label, __func__, i);
-		printf("encoded: %s\n", decoded_msg_to_str(orig));
+		printf("encoded: %s\n", decoded_msg_to_str(orig, iec));
 
 		put = (struct osmo_gtlv_put){
 			.cfg = cfg,
 			.dst = msgb_alloc(1024, __func__),
 		};
-		rc = osmo_gtlvs_encode(&put, (void *)orig, sizeof(*orig), 0, msg_ie_coding,
+		rc = osmo_gtlvs_encode(&put, (void *)orig, sizeof(*orig), 0, iec,
 				       err_cb, &verify_err_cb_data, tag_names);
 		printf("osmo_gtlvs_encode() rc = %d\n", rc);
 		printf("%s.\n", osmo_hexdump(put.dst->data, put.dst->len));
@@ -396,11 +531,11 @@ void test_enc_dec(const char *label, const struct osmo_gtlv_cfg *cfg, bool order
 			.cfg = cfg,
 			.src = { put.dst->data, put.dst->len },
 		};
-		rc = osmo_gtlvs_decode(&parsed, sizeof(parsed), 0, &load, ordered, msg_ie_coding,
+		rc = osmo_gtlvs_decode(&parsed, sizeof(parsed), 0, &load, ordered, iec,
 				       err_cb, &verify_err_cb_data, tag_names);
 		printf("osmo_gtlvs_decode() rc = %d\n", rc);
-		printf("decoded: %s\n", decoded_msg_to_str(&parsed));
-		if (strcmp(decoded_msg_to_str(orig), decoded_msg_to_str(&parsed))) {
+		printf("decoded: %s\n", decoded_msg_to_str(&parsed, iec));
+		if (strcmp(decoded_msg_to_str(orig, iec), decoded_msg_to_str(&parsed, iec))) {
 			printf(" ERROR: parsed != orig\n");
 			exit(1);
 		}
@@ -413,11 +548,17 @@ int main()
 	ctx = talloc_named_const(NULL, 0, "gtlv_test");
 	msgb_talloc_ctx_init(ctx, 0);
 
-	test_enc_dec("t8l8v ordered", &osmo_t8l8v_cfg, true);
-	test_enc_dec("t8l8v unordered", &osmo_t8l8v_cfg, false);
+	test_enc_dec("1: t8l8v ordered", &osmo_t8l8v_cfg, msg_ie_coding, true);
+	test_enc_dec("1: t8l8v unordered", &osmo_t8l8v_cfg, msg_ie_coding, false);
 
-	test_enc_dec("t16l16v ordered", &osmo_t16l16v_cfg, true);
-	test_enc_dec("t16l16v unordered", &osmo_t16l16v_cfg, false);
+	test_enc_dec("1: t16l16v ordered", &osmo_t16l16v_cfg, msg_ie_coding, true);
+	test_enc_dec("1: t16l16v unordered", &osmo_t16l16v_cfg, msg_ie_coding, false);
+
+	test_enc_dec("2: t8l8v ordered", &osmo_t8l8v_cfg, msg_ie_coding2, true);
+	test_enc_dec("2: t8l8v unordered", &osmo_t8l8v_cfg, msg_ie_coding2, false);
+
+	test_enc_dec("2: t16l16v ordered", &osmo_t16l16v_cfg, msg_ie_coding2, true);
+	test_enc_dec("2: t16l16v unordered", &osmo_t16l16v_cfg, msg_ie_coding2, false);
 
 	talloc_free(ctx);
 	return 0;
