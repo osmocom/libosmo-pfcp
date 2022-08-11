@@ -455,13 +455,13 @@ static int osmo_pfcp_msg_destructor(struct osmo_pfcp_msg *m)
 {
 	OSMO_LOG_PFCP_MSG(m, LOGL_DEBUG, "discarding\n");
 	if (m->ctx.session_use_count)
-		osmo_use_count_get_put(m->ctx.session_use_count, m->ctx.session_use_token, -1);
+		OSMO_ASSERT(osmo_use_count_get_put(m->ctx.session_use_count, m->ctx.session_use_token, -1) == 0);
 	m->ctx.session_fi = NULL;
 	m->ctx.session_use_count = NULL;
 	m->ctx.session_use_token = NULL;
 
 	if (m->ctx.peer_use_count)
-		osmo_use_count_get_put(m->ctx.peer_use_count, m->ctx.peer_use_token, -1);
+		OSMO_ASSERT(osmo_use_count_get_put(m->ctx.peer_use_count, m->ctx.peer_use_token, -1) == 0);
 	m->ctx.peer_fi = NULL;
 	m->ctx.peer_use_count = NULL;
 	m->ctx.peer_use_token = NULL;
