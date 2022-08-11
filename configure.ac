@@ -41,8 +41,6 @@ AC_SEARCH_LIBS([dlopen], [dl dld], [LIBRARY_DL="$LIBS";LIBS=""])
 AC_SUBST(LIBRARY_DL)
 
 PKG_CHECK_MODULES(LIBOSMOCORE, libosmocore >= 1.5.0)
-PKG_CHECK_MODULES(LIBOSMOVTY, libosmovty >= 1.5.0)
-PKG_CHECK_MODULES(LIBOSMOCTRL, libosmoctrl >= 1.5.0)
 
 dnl checks for header files
 AC_HEADER_STDC
