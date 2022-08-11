@@ -127,16 +127,19 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, size_t decoded_stru
 		 * that can store them are filled up. */
 		ie_max_allowed_count = 0;
 
+		/* Unordered: for every tag, look for matching IE definitions from the start. */
+		iec = ie_coding;
+		/* There may be multiple subsequent occurences of the same tag, to be decoded into multiple members of
+		 * the decoded struct. Iterate until encountering a still "free slot" for decoding. */
 		do {
 			/* Find the IE coding for this tag */
-			for (iec = ie_coding;
-			     !osmo_gtlv_coding_end(iec) && osmo_gtlv_tag_inst_cmp(&iec->ti, &gtlv->ti);
+			for (; !osmo_gtlv_coding_end(iec) && osmo_gtlv_tag_inst_cmp(&iec->ti, &gtlv->ti);
 			     iec++);
 			/* No such IE coding found. */
 			if (osmo_gtlv_coding_end(iec))
 				break;
 
-			/* Keep track how often this tag can occur */
+			/* Keep track how often this tag can occur in total */
 			ie_max_allowed_count += iec->has_count ? iec->count_max : 1;
 
 			/* Was this iec instance already decoded? Then skip to the next one, if any. */
@@ -145,23 +148,35 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, size_t decoded_stru
 			multi_count_p = iec->has_count ?
 				membof(obj, obj_maxlen, iec->count_ofs) : NULL;
 			if ((presence_flag_p && *presence_flag_p)
-			    || (multi_count_p && *multi_count_p >= iec->count_max))
+			    || (multi_count_p && *multi_count_p >= iec->count_max)) {
+				iec++;
 				continue;
+			}
+
 			/* For IEs with a presence flag or a multi count, the decoded struct provides the information
 			 * whether the IE has already been decoded. Do the same for mandatory IEs, using local state in
 			 * seen_ie_coding_entries[]. */
-			CHECK_SEEN(iec);
-			if (*seen_p)
-				continue;
-		} while (0);
+			if (!presence_flag_p && !multi_count_p) {
+				CHECK_SEEN(iec);
+				if (*seen_p) {
+					iec++;
+					continue;
+				}
+			}
+
+			/* Found an IE coding that has not yet been decoded / still has unused struct members to decode
+			 * to. */
+			break;
+		} while (1);
+
 		if (osmo_gtlv_coding_end(iec)) {
 			if (ie_max_allowed_count) {
-				/* There have been IE definitions for this IEI, but all slots to decode it are already
-				 * filled. */
+				/* This tag exists in the protocol definitions, but we've run out of struct members to
+				 * decode the tag to. */
 				RETURN_ERROR(-ENOTSUP, gtlv->ti, "Only %u instances of this IE are supported per message",
 					     ie_max_allowed_count);
 			}
-			/* No such IE defined in ie_coding, just skip the TLV. */
+			/* This is an unknown tag, no such IEI defined in ie_coding, just skip the TLV. */
 			continue;
 		}
 
@@ -264,13 +279,21 @@ static int osmo_gtlvs_decode_ordered(void *decoded_struct, size_t decoded_struct
 
 	osmo_gtlv_load_start(gtlv);
 
+	/* Ordered: traverse the ie_coding exactly once, expecting tags to be decoded to appear in the same order. */
 	for (; !osmo_gtlv_coding_end(ie_coding); ie_coding++) {
 		int rc;
-		bool *presence_flag = ie_coding->has_presence_flag ?
-			membof(obj, obj_maxlen, ie_coding->presence_flag_ofs) : NULL;
-		unsigned int *multi_count = ie_coding->has_count ?
-			membof(obj, obj_maxlen, ie_coding->count_ofs) : NULL;
+		bool *presence_flag;
+		unsigned int *multi_count;
 		struct osmo_gtlv_tag_inst peek_ti;
+
+#define UPDATE_STATE_FROM_IE_CODING() do { \
+		presence_flag = ie_coding->has_presence_flag ? \
+			membof(obj, obj_maxlen, ie_coding->presence_flag_ofs) : NULL; \
+		multi_count = ie_coding->has_count ? \
+			membof(obj, obj_maxlen, ie_coding->count_ofs) : NULL; \
+	} while (0)
+
+		UPDATE_STATE_FROM_IE_CODING();
 
 		rc = osmo_gtlv_load_next_by_tag_inst(gtlv, &ie_coding->ti);
 		switch (rc) {
@@ -289,12 +312,39 @@ static int osmo_gtlvs_decode_ordered(void *decoded_struct, size_t decoded_struct
 		for (;;) {
 			/* If this is a repeated IE, decode into the correct array index memb[idx],
 			 * next idx == (*multi_count) */
-			unsigned int memb_next_array_idx = multi_count ? *multi_count : 0;
-			unsigned int memb_ofs = ie_coding->memb_ofs + memb_next_array_idx * ie_coding->memb_array_pitch;
+			unsigned int memb_next_array_idx;
+			unsigned int memb_ofs;
 
-			if (multi_count && memb_next_array_idx >= ie_coding->count_max)
-				RETURN_ERROR(-ENOTSUP, ie_coding->ti, "Only %u instances of this IE are supported per message",
-					     ie_coding->count_max);
+#define UPDATE_MEMB_IDX() do { \
+			memb_next_array_idx = multi_count ? *multi_count : 0; \
+			memb_ofs = ie_coding->memb_ofs + memb_next_array_idx * ie_coding->memb_array_pitch; \
+		} while (0)
+
+			UPDATE_MEMB_IDX();
+
+			if (multi_count && memb_next_array_idx >= ie_coding->count_max) {
+				/* This repeated IE is full. But the protocol may define this same IEI to follow again,
+				 * with a different target struct member. See if this IEI appears again. */
+				const struct osmo_gtlv_coding *iec = ie_coding;
+				bool iei_appears_again = false;
+				for (iec = ie_coding + 1; !osmo_gtlv_coding_end(iec); iec++) {
+					if (osmo_gtlv_tag_inst_cmp(&gtlv->ti, &iec->ti) == 0) {
+						iei_appears_again = true;
+						break;
+					}
+				}
+
+				if (!iei_appears_again)
+					RETURN_ERROR(-ENOTSUP, ie_coding->ti, "Only %u instances of this IE are supported per message",
+						     ie_coding->count_max);
+
+				/* IEI does appear again. Skip forward to this ie_coding, and use that to decode the
+				 * current TLV (do not call osmo_gtlv_load_next_by_tag_inst() again, or we'd skip the
+				 * TLV in the message being decoded). */
+				ie_coding = iec;
+				UPDATE_STATE_FROM_IE_CODING();
+				UPDATE_MEMB_IDX();
+			}
 
 			/* Decode IE value part */
 			if (ie_coding->nested_ies) {
