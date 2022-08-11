@@ -46,7 +46,7 @@ Multi-Arch: same
 Section: libdevel
 Depends: ${misc:Depends},
          libosmo-gtlv0 (= ${binary:Version})
-Description: Development headers for libosmo-gtlv
+Description: Development files for libosmo-gtlv
  libosmo-gtlv implements decoding, encoding and logging of protocols using a
  Tag-Length-Value and/or Tag-Length-Instance-Value structure. This package in
  particular contains the files for compiling a program using this library.
@@ -80,7 +80,7 @@ Multi-Arch: same
 Section: libdevel
 Depends: ${misc:Depends},
          libosmo-pfcp0 (= ${binary:Version})
-Description: Development headers for libosmo-pfcp
+Description: Development files for libosmo-pfcp
  libosmo-pfcp implements decoding, encoding and endpoint implementation of the
  Packet Forwarding Control Protocol (3GPP TS 29.244). This package in particular
  contains the files for compiling a program using this library.
