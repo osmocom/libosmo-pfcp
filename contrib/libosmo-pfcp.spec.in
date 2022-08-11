@@ -12,12 +12,58 @@ BuildRequires:  libtool >= 2
 BuildRequires:  lksctp-tools-devel
 BuildRequires:  pkgconfig >= 0.20
 BuildRequires:  pkgconfig(libosmocore) >= 1.6.0
-BuildRequires:  pkgconfig(libosmoctrl) >= 1.6.0
-BuildRequires:  pkgconfig(libosmovty) >= 1.6.0
 BuildRequires:  pkgconfig(talloc)
 
 %description
-libosmo-pfcp: PFCP protocol encoding and decoding, and generic PFCP endpoint implementation
+Description: Osmocom PFCP protocol implementation (metapackage)
+
+Install Osmocom PFCP and generic TLV protocol libraries.
+libosmo-gtlv and libosmo-pfcp
+
+
+%package -n libosmo-gtlv0
+Summary:        Generic TLV and TLIV protocol support
+License:        GPL-2.0-or-later AND AGPL-3.0-or-later
+Group:          System/Libraries
+
+%description -n libosmo-gtlv0
+Decoding, encoding and logging of protocols using a Tag-Length-Value and/or
+Tag-Length-Instance-Value structure.
+
+
+%package -n libosmo-gtlv-devel
+Summary:        Development files for libosmo-pfcp
+License:        GPL-2.0-or-later
+Group:          Development/Libraries/C and C++
+Requires:       libosmo-gtlv0 = %{version}
+
+%description -n libosmo-gtlv-devel
+libosmo-pfcp implements decoding, encoding and endpoint implementation of the
+Packet Forwarding Control Protocol (3GPP TS 29.244). This package in particular
+contains the files for compiling a program using this library.
+
+
+%package -n libosmo-pfcp0
+Summary:        PFCP protocol support
+License:        GPL-2.0-or-later AND AGPL-3.0-or-later
+Group:          System/Libraries
+
+%description -n libosmo-pfcp0
+PFCP protocol support: Decoding, encoding and endpoint implementation of the
+Packet Forwarding Control Protocol (3GPP TS 29.244).
+
+
+%package -n libosmo-pfcp-devel
+Summary:        Development files for libosmo-pfcp
+License:        GPL-2.0-or-later
+Group:          Development/Libraries/C and C++
+Requires:       libosmo-pfcp0 = %{version}
+
+%description -n libosmo-pfcp-devel
+libosmo-pfcp implements decoding, encoding and endpoint implementation of the
+Packet Forwarding Control Protocol (3GPP TS 29.244). This package in particular
+contains the files for compiling a program using this library.
+
 
 %prep
 %setup -q
@@ -30,13 +76,36 @@ make %{?_smp_mflags}
 
 %install
 %make_install
+find %{buildroot} -type f -name "*.la" -delete -print
 
 %check
 make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 
-%files
-%license COPYING
-%doc AUTHORS README.md
-%{_bindir}/libosmo-pfcp
+%post   -n libosmo-gtlv0 -p /sbin/ldconfig
+%postun -n libosmo-gtlv0 -p /sbin/ldconfig
+%post   -n libosmo-pfcp0 -p /sbin/ldconfig
+%postun -n libosmo-pfcp0 -p /sbin/ldconfig
+
+%files -n libosmo-gtlv0
+%{_libdir}/libosmo-gltv.so.0*
+
+%files -n libosmo-gtlv-devel
+%dir %{_includedir}/%{name}
+%dir %{_includedir}/%{name}/osmocom
+%{_includedir}/%{name}/osmocom/gtlv
+%{_libdir}/libosmo-gtlv.so
+%{_libdir}/libosmo-gtlv.a
+%{_libdir}/pkgconfig/libosmo-gtlv.pc
+
+%files -n libosmo-pfcp0
+%{_libdir}/libosmo-pfcp.so.0*
+
+%files -n libosmo-pfcp-devel
+%dir %{_includedir}/%{name}
+%dir %{_includedir}/%{name}/osmocom
+%{_includedir}/%{name}/osmocom/pfcp
+%{_libdir}/libosmo-pfcp.so
+%{_libdir}/libosmo-pfcp.a
+%{_libdir}/pkgconfig/libosmo-pfcp.pc
 
 %changelog
