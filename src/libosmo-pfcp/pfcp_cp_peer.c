@@ -388,7 +388,7 @@ void osmo_pfcp_cp_peer_set_msg_ctx(struct osmo_pfcp_cp_peer *cp_peer, struct osm
 
 	m->ctx.peer_use_count = &cp_peer->use_count;
 	m->ctx.peer_use_token = (m->rx ? "PFCPrx" : "PFCPtx");
-	osmo_use_count_get_put(m->ctx.peer_use_count, m->ctx.peer_use_token, 1);
+	OSMO_ASSERT(osmo_use_count_get_put(m->ctx.peer_use_count, m->ctx.peer_use_token, 1) == 0);
 }
 
 /* Allocate a new PFCP request message to be sent to cp_peer->remote_addr. */
