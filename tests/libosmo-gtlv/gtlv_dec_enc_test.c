@@ -387,7 +387,8 @@ void test_enc_dec(const char *label, const struct osmo_gtlv_cfg *cfg, bool order
 			.cfg = cfg,
 			.dst = msgb_alloc(1024, __func__),
 		};
-		rc = osmo_gtlvs_encode(&put, (void *)orig, 0, msg_ie_coding, err_cb, &verify_err_cb_data, tag_names);
+		rc = osmo_gtlvs_encode(&put, (void *)orig, sizeof(*orig), 0, msg_ie_coding,
+				       err_cb, &verify_err_cb_data, tag_names);
 		printf("osmo_gtlvs_encode() rc = %d\n", rc);
 		printf("%s.\n", osmo_hexdump(put.dst->data, put.dst->len));
 

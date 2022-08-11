@@ -388,7 +388,8 @@ static void write_c()
 		"int %s_ies_encode(struct osmo_gtlv_put *gtlv, const union %s_ies *src,\n"
 		"	%s message_type, osmo_gtlv_err_cb err_cb, void *err_cb_data, const struct value_string *iei_strs)\n"
 		"{\n"
-		"	return osmo_gtlvs_encode(gtlv, src, 0, %s_get_msg_coding(message_type), err_cb, err_cb_data, iei_strs);\n"
+		"	return osmo_gtlvs_encode(gtlv, src, sizeof(*src), 0, %s_get_msg_coding(message_type),\n"
+		"		err_cb, err_cb_data, iei_strs);\n"
 		"}\n",
 		g_cfg->proto_name, g_cfg->proto_name, g_cfg->message_type_enum ? : "int", g_cfg->proto_name);
 	printf("\n"

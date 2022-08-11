@@ -49,6 +49,19 @@
 		return RC; \
 	} while (0)
 
+/* Reverse offsetof(): return the address of the struct member for a given parent struct and member offset value.
+ * \param parent  Pointer to the parent struct, e.g. decoded_struct as passed to osmo_gtlvs_decode().
+ * \param parent_size  sizeof(*parent), for memory bounds checking, e.g. decoded_struct_size.
+ * \param memb_ofs  byte offset to reach a member (e.g. osmo_gtlv_coding.memb_ofs, .presence_flag_ofs, ...). */
+static const void *membof_const(const void *parent, size_t parent_size, unsigned int memb_ofs)
+{
+	const uint8_t *p = parent;
+	const uint8_t *end = p + parent_size;
+	const uint8_t *memb = p + memb_ofs;
+	OSMO_ASSERT(memb < end);
+	OSMO_ASSERT(memb >= p);
+	return memb;
+}
 
 /*! Decode a TLV structure from raw data to a decoded struct, for unordered TLV IEs.
  * How to decode IE values and where to place them in the decoded struct, is defined by ie_coding, an array terminated
@@ -378,19 +391,22 @@ int osmo_gtlvs_decode(void *decoded_struct, unsigned int obj_ofs, struct osmo_gt
  * \param[in] iei_strs  value_string array to give IEI names in error messages passed to err_cb(), or NULL.
  * \return 0 on success, negative on error.
  */
-int osmo_gtlvs_encode(struct osmo_gtlv_put *gtlv, const void *decoded_struct, unsigned int obj_ofs,
-		     const struct osmo_gtlv_coding *ie_coding,
-		     osmo_gtlv_err_cb err_cb, void *err_cb_data, const struct value_string *iei_strs)
+int osmo_gtlvs_encode(struct osmo_gtlv_put *gtlv, const void *decoded_struct, size_t decoded_struct_size,
+		      unsigned int obj_ofs, const struct osmo_gtlv_coding *ie_coding, osmo_gtlv_err_cb err_cb,
+		      void *err_cb_data, const struct value_string *iei_strs)
 {
-	void *obj = MEMB(decoded_struct, obj_ofs);
+	const void *obj = membof_const(decoded_struct, decoded_struct_size, obj_ofs);
+	size_t obj_maxlen = decoded_struct_size - obj_ofs;
 
 	if (!ie_coding)
 		return -ENOTSUP;
 
 	for (; !osmo_gtlv_coding_end(ie_coding); ie_coding++) {
 		int rc;
-		bool *presence_flag_p = ie_coding->has_presence_flag ? MEMB(obj, ie_coding->presence_flag_ofs) : NULL;
-		unsigned int *multi_count_p = ie_coding->has_count ? MEMB(obj, ie_coding->count_ofs) : NULL;
+		const bool *presence_flag_p = ie_coding->has_presence_flag ?
+			membof_const(obj, obj_maxlen, ie_coding->presence_flag_ofs) : NULL;
+		const unsigned int *multi_count_p = ie_coding->has_count ?
+			membof_const(obj, obj_maxlen, ie_coding->count_ofs) : NULL;
 		unsigned int n;
 		unsigned int i;
 
@@ -423,13 +439,14 @@ int osmo_gtlvs_encode(struct osmo_gtlv_put *gtlv, const void *decoded_struct, un
 					.cfg = ie_coding->nested_ies_cfg ? : gtlv->cfg,
 					.dst = gtlv->dst,
 				};
-				rc = osmo_gtlvs_encode(&nested_tlv, decoded_struct, obj_ofs + memb_ofs,
-						      ie_coding->nested_ies, err_cb, err_cb_data, iei_strs);
+				rc = osmo_gtlvs_encode(&nested_tlv, decoded_struct, decoded_struct_size,
+						       obj_ofs + memb_ofs, ie_coding->nested_ies,
+						       err_cb, err_cb_data, iei_strs);
 				if (rc)
 					RETURN_ERROR(rc, ie_coding->ti,
 						     "Error while encoding TLV structure nested inside this IE");
 			} else {
-				rc = ie_coding->enc_func(gtlv, decoded_struct, MEMB(obj, memb_ofs));
+				rc = ie_coding->enc_func(gtlv, decoded_struct, membof_const(obj, obj_maxlen, memb_ofs));
 				if (rc)
 					RETURN_ERROR(rc, ie_coding->ti, "Error while encoding this IE");
 			}
