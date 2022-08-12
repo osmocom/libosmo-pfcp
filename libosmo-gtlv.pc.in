@@ -4,7 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: Osmocom Generic TLV Library
-Description: C Utility Library
+Description: C Utility Library to parse Tag-Length-Value based protocols
 Version: @VERSION@
 Libs: -L${libdir} -losmo-gtlv
 Cflags: -I${includedir}/
