@@ -11,6 +11,10 @@ config.h.in
 *.pc
 *~
 
+include/osmocom/pfcp/pfcp_ies_auto.h
+src/libosmo-pfcp/gen__pfcp_ies_auto
+src/libosmo-pfcp/pfcp_ies_auto.c
+
 *.*~
 *.sw?
 .libs
@@ -51,6 +55,13 @@ src/osmo-upf/osmo-upf
 #tests
 tests/testsuite.dir
 tests/*/*_test
+tests/*/*/*_test
+tests/libosmo-gtlv/test_gtlv_gen/gen__myproto_ies_auto
+tests/libosmo-gtlv/test_gtlv_gen/myproto_ies_auto.c
+tests/libosmo-gtlv/test_gtlv_gen/myproto_ies_auto.h
+tests/libosmo-gtlv/test_tliv/gen__myproto_ies_auto
+tests/libosmo-gtlv/test_tliv/myproto_ies_auto.c
+tests/libosmo-gtlv/test_tliv/myproto_ies_auto.h
 
 tests/atconfig
 tests/atlocal
@@ -71,4 +82,4 @@ doc/manuals/osmoupf-usermanual.xml
 doc/manuals/common
 doc/manuals/build
 
-contrib/osmo-upf.spec
+contrib/libosmo-pfcp.spec
