@@ -71,7 +71,8 @@ contains the files for compiling a program using this library.
 %build
 echo "%{version}" >.tarball-version
 autoreconf -fi
-%configure
+%configure \
+  --includedir="%_includedir/%name"
 make %{?_smp_mflags}
 
 %install
@@ -87,7 +88,7 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %postun -n libosmo-pfcp0 -p /sbin/ldconfig
 
 %files -n libosmo-gtlv0
-%{_libdir}/libosmo-gltv.so.0*
+%{_libdir}/libosmo-gtlv.so.0*
 
 %files -n libosmo-gtlv-devel
 %dir %{_includedir}/%{name}
