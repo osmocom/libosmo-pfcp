@@ -1,7 +1,7 @@
 Name:           libosmo-pfcp
 Version:        @VERSION@
 Release:        0
-Summary:        libosmo-pfcp: PFCP protocol encoding and decoding, and generic PFCP endpoint implementation
+Summary:        PFCP protocol encoding, decoding and endpoint implementation
 License:        AGPL-3.0-or-later AND GPL-2.0-or-later
 Group:          Hardware/Mobile
 URL:            https://osmocom.org/projects/libosmo-pfcp
