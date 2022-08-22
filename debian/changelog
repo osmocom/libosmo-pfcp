@@ -1,3 +1,47 @@
+libosmo-pfcp (0.1.1) unstable; urgency=medium
+
+  [ Vadim Yanitskiy ]
+  * fix incorrect timeout values: milliseconds vs microseconds
+  * configure: fix AC_CONFIG_MACRO_DIRS related warnings
+  * configure: fix warning: AC_OUTPUT should be used without arguments
+  * gitignore: ignore *.la objects: libosmo-{gtlv,pfcp}.la
+  * contrib/libosmo-pfcp.spec.in: do not depend on systemd
+  * contrib/libosmo-pfcp.spec.in: do not disable LTO
+  * configure.ac: do not require unused dlopen
+
+  [ Neels Hofmeyr ]
+  * separate pfcp_queue_timer_cb() in req and resp
+  * fix wrong constants used in osmo_pfcp_tdefs (typo)
+  * clarify osmo_pfcp_msg alloc API
+  * apply code review: refactor pfcp_endpoint API
+  * pfcp_endpoint: fix final PFCP retrans resp_cb
+  * set LIBVERSION=0:0:0
+  * comment / whitespace tweaks in pfcp_endpoint.c
+  * debian packaging of libosmo-gtlv and libosmo-pfcp
+  * README.md: tweak clone URL
+  * configure.ac: drop dependencies on vty and ctrl
+  * RPM: fix .spec file
+  * debian: add missing *-dev.install files
+  * debian/control: fix confusion in description
+  * debian: fix missing dep gtlv0 <- pfcp0
+  * libosmo-gtlv.pc.in: tweak Description
+  * fix warnings: 'uninitialized'
+  * .gitignore fixes: generated sources, .spec file
+  * doc: minor fix in pfcp_cp_peer_fsm.dot
+  * pfcp_cp_peer: check use count correctness
+  * RPM: fix configure and typo "gltv" in .spec.in
+
+  [ Oliver Smith ]
+  * gitreview: fix project
+  * rpm spec: use --disable-static
+  * debian/control: move -dev deps of libosmo-gtlv-dev
+  * packaging: depend on libosmocore >= 1.7.0
+
+  [ Harald Welte ]
+  * rpm spec: reduce summary line length
+
+ -- Oliver Smith <osmith@sysmocom.de>  Mon, 22 Aug 2022 11:38:51 +0200
+
 libosmo-pfcp (0.1.0) testing; urgency=low
 
   Create new Debian package.
