@@ -72,6 +72,7 @@ contains the files for compiling a program using this library.
 echo "%{version}" >.tarball-version
 autoreconf -fi
 %configure \
+  --disable-static \
   --includedir="%_includedir/%name"
 make %{?_smp_mflags}
 
@@ -95,7 +96,6 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %dir %{_includedir}/%{name}/osmocom
 %{_includedir}/%{name}/osmocom/gtlv
 %{_libdir}/libosmo-gtlv.so
-%{_libdir}/libosmo-gtlv.a
 %{_libdir}/pkgconfig/libosmo-gtlv.pc
 
 %files -n libosmo-pfcp0
@@ -106,7 +106,6 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %dir %{_includedir}/%{name}/osmocom
 %{_includedir}/%{name}/osmocom/pfcp
 %{_libdir}/libosmo-pfcp.so
-%{_libdir}/libosmo-pfcp.a
 %{_libdir}/pkgconfig/libosmo-pfcp.pc
 
 %changelog
