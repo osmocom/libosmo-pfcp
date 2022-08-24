@@ -1,0 +1,142 @@
+{hscale=1}
+sgsn =	SGSN
+	123.44.0.9
+sgwc =	SGW-C
+	123.44.0.5
+sgwu =	SGW-U
+	123.44.0.6
+pgwc =	PGW-C
+	123.44.0.7
+pgwu =	PGW-U
+	123.44.0.8
+
+sgsn <-> sgwc	S4-C GTPv2-C
+sgwc <-> sgwu	Sxa PFCP
+sgsn <-> sgwu	S4-U GTPv1-U
+sgwc <-> pgwc	S5-C GTPv2-C
+pgwc <-> pgwu	Sxb PFCP
+sgwu <-> pgwu	S5-U GTPv1-U
+
+...
+
+sgsn -> sgwc	GTP Create Session Request
+sgsn [] sgwc	F-TEID S11 = 123.44.0.9,0x004
+		F-TEID S5 = 123.44.0.7,0x000
+		PDN addr alloc = IPv4 192.168.100.2
+
+|||
+|||
+
+sgwc -> sgwu	PFCP Session Establishment Request
+sgwc [] sgwu	2x Create PDR
+		F-TEID = CHOOSE
+		FAR = NOCP,BUFF
+
+|||
+|||
+
+sgwc <- sgwu	PFCP Session Establishment Response
+sgwc [] sgwu	Created PDR F-TEID 123.44.0.6,0x015
+		Created PDR F-TEID 123.44.0.6,0x016
+
+|||
+|||
+
+sgwc -> pgwc	GTP Create Session Request
+sgwc [] pgwc	F-TEID S5 = 123.44.0.5,0x00b
+		PDN addr alloc = IPv4 192.168.100.2
+		Bearer Ctx: F-TEID S5 = 123.44.0.6,0x015
+
+|||
+|||
+
+pgwc -> pgwu	PFCP Session Establishment Request
+pgwc [] pgwu	Create PDR 1:
+		PDI: src-iface Core, UE IPv4 192.168.100.2
+		FAR-1: FORW, dst-iface Access,
+		hdr creation: GTP-U 123.44.0.6,0x015
+
+		Create PDR 2:
+		PDI: src-iface Access, F-TEID = CHOOSE id:05
+		hdr removal: GTP-U
+		FAR-2: FORW, dst-iface Core
+
+		Create PDR 3:
+		PDI: src-iface CP-function, F-TEID = CHOOSE
+		hdr removal: GTP-U
+		FAR-1
+
+		Create PDR 4:
+		PDI: src-iface Access, F-TEID = CHOOSE id:05, SDF Filter
+		hdr removal: GTP-U
+		FAR-3: FORW, dst-iface CP-Function,
+		hdr creation: GTP-U 123.44.0.7,0x00b
+
+|||
+
+pgwc <- pgwu	PFCP Session Establishment Response
+pgwc [] pgwu	Created PDR-1
+		Created PDR-2: F-TEID = 123.44.0.8,0x01e
+		Created PDR-3: F-TEID = 123.44.0.8,0x01f
+		Created PDR-4: F-TEID = 123.44.0.8,0x01e
+
+|||
+|||
+
+sgwc <- pgwc	GTP Create Session Response
+sgwc [] pgwc	TEID: 0x00b
+		F-TEID: 123.44.0.7,0x00b
+		PDN Addr: 192.168.100.2
+		Bearer Ctx: F-TEID S5 123.44.0.8,0x01e
+
+|||
+|||
+
+sgwc -> sgwu	PFCP Session Modification Request
+sgwc [] sgwu	Update FAR-2: FORW, dst-iface Core,
+		hdr creation GTP-U 123.44.0.8,0x01e
+
+|||
+
+sgwc <- sgwu	PFCP Session Modification Response
+
+|||
+|||
+
+sgsn <- sgwc	GTP Create Session Response
+sgsn [] sgwc	TEID: 0x004
+		F-TEID S11/S4: 123.44.0.5,0x007
+		F-TEID S5/S8: 123.44.0.7,0x00b
+		PDN Addr: 192.168.100.2
+		Bearer Ctx:
+		F-TEID S1-U: 123.44.0.6,0x016
+		F-TEID S5/S8: 123.44.0.8,0x01e
+
+|||
+|||
+
+sgsn -> sgwc	GTP Modify Bearer Request
+sgsn [] sgwc	TEID: 0x007
+		Bearer Ctx:
+		F-TEID S1-U: 192.168.104.167,0x32adb2ad
+
+|||
+|||
+
+sgwc -> sgwu	PFCP Session Modification Request
+sgwc [] sgwu	Update FAR-1: FORW, dst-iface Access,
+		hdr creation: GTP-U 192.168.104.167,0x32adb2ad
+
+|||
+|||
+
+
+sgwc <- sgwu	PFCP Session Modification Response
+
+|||
+
+sgsn <- sgwc	GTP Modify Bearer Response
+sgsn [] sgwc	TEID: 0x004
+		Bearer Ctx:
+		F-TEID S1-U: 192.168.104.167,0x32adb2ad
+
