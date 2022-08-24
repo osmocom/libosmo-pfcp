@@ -1,3 +1,10 @@
+libosmo-pfcp (0.1.2) unstable; urgency=medium
+
+  [ Neels Hofmeyr ]
+  * pkgconfig: add missing 'Requires:'
+
+ -- Neels Janosch Hofmeyr <nhofmeyr@sysmocom.de>  Wed, 24 Aug 2022 16:39:11 +0200
+
 libosmo-pfcp (0.1.1) unstable; urgency=medium
 
   [ Vadim Yanitskiy ]
