@@ -204,7 +204,7 @@ const struct osmo_gtlv_cfg osmo_tliv_cfg = {
 	.store_tl = tliv_store_tl,
 };
 
-int main()
+int main(int argc, char **argv)
 {
 	ctx = talloc_named_const(NULL, 0, "test_gen_tlv");
 	msgb_talloc_ctx_init(ctx, 0);

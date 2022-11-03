@@ -329,7 +329,7 @@ struct ie *t8l8v_tests[] = {
 	t8l8v_test_multi,
 };
 
-void test_t8l8v()
+void test_t8l8v(void)
 {
 	test_tlv(__func__, t8l8v_tests, ARRAY_SIZE(t8l8v_tests), &osmo_t8l8v_cfg);
 }
@@ -378,7 +378,7 @@ struct ie *t16l16v_tests[] = {
 	t16l16v_test_multi,
 };
 
-void test_t16l16v()
+void test_t16l16v(void)
 {
 	test_tlv(__func__, t16l16v_tests, ARRAY_SIZE(t16l16v_tests), &osmo_t16l16v_cfg);
 }
@@ -521,7 +521,7 @@ const struct osmo_gtlv_cfg txlxv_cfg = {
 	.store_tl = txlxv_store_tl,
 };
 
-void test_txlxv()
+void test_txlxv(void)
 {
 	test_tlv(__func__, txlxv_tests, ARRAY_SIZE(txlxv_tests), &txlxv_cfg);
 }
@@ -609,12 +609,12 @@ struct ie *tliv_tests[] = {
 	tliv_test1,
 };
 
-void test_tliv()
+void test_tliv(void)
 {
 	test_tlv(__func__, tliv_tests, ARRAY_SIZE(tliv_tests), &osmo_tliv_cfg);
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	ctx = talloc_named_const(NULL, 0, "gtlv_test");
 	msgb_talloc_ctx_init(ctx, 0);

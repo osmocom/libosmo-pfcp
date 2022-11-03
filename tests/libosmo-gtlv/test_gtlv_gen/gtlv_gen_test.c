@@ -245,7 +245,7 @@ void test_enc_dec(const char *label, const struct osmo_gtlv_cfg *cfg, bool order
 	}
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	ctx = talloc_named_const(NULL, 0, "test_gen_tlv");
 	msgb_talloc_ctx_init(ctx, 0);

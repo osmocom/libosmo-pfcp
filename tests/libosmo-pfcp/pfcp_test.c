@@ -451,7 +451,7 @@ struct osmo_pfcp_msg tests[] = {
 	},
 };
 
-void test_enc_dec()
+void test_enc_dec(void)
 {
 	int i;
 	for (i = 0; i < ARRAY_SIZE(tests); i++) {
@@ -500,7 +500,7 @@ void test_enc_dec()
 	}
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	ctx = talloc_named_const(NULL, 0, "pfcp_test");
 	msgb_talloc_ctx_init(ctx, 0);

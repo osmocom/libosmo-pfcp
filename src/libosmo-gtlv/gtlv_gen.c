@@ -62,7 +62,7 @@ static bool seen(const char *str, const void *from_def)
 	llist_add(&s->entry, &seen_list);
 	return false;
 }
-static void clear_seen()
+static void clear_seen(void)
 {
 	struct seen_entry *s;
 	while ((s = llist_first_entry_or_null(&seen_list, struct seen_entry, entry))) {
@@ -148,7 +148,7 @@ static void write_ie_auto_structs(const struct osmo_gtlv_gen_ie_o ies[])
 
 /* Write all auto-generated structs, starting with the outer message definitions and nesting into all contained IE
  * definitions. */
-static void write_auto_structs()
+static void write_auto_structs(void)
 {
 	const struct osmo_gtlv_gen_msg *gen_msg;
 	clear_seen();
@@ -171,7 +171,7 @@ static void write_auto_structs()
  *        myproto_msg_goo goo;
  * };
  */
-static void write_msg_union()
+static void write_msg_union(void)
 {
 	const struct osmo_gtlv_gen_msg *gen_msg;
 	for (gen_msg = g_cfg->msg_defs; gen_msg->name; gen_msg++) {
@@ -193,7 +193,7 @@ static void write_msg_union()
 }
 
 /* Write the C header, myproto_ies_auto.h */
-static void write_h()
+static void write_h(void)
 {
 	printf("/* THIS FILE IS GENERATED FROM %s */\n", __FILE__);
 	printf("#include <stdint.h>\n");
@@ -326,7 +326,7 @@ static void write_nested_ies_array(const struct osmo_gtlv_gen_ie_o *ies)
 /* Write the bulk of the C code: on the basis of the list of messages (g_cfg->msg_defs), write all dec/enc function
  * declarations, all IEs arrays as well as the list of message types, first triggering to write the C code for any inner
  * layers. */
-static void write_c()
+static void write_c(void)
 {
 	const struct osmo_gtlv_gen_msg *gen_msg;
 
