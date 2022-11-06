@@ -69,7 +69,10 @@ struct osmo_pfcp_endpoint_cfg {
 	osmo_pfcp_endpoint_cb set_msg_ctx_cb;
 
 	/* Callback to receive a single incoming PFCP message from a remote peer, already decoded. See also the doc for
-	 * osmo_pfcp_endpoint_cb. */
+	 * osmo_pfcp_endpoint_cb.
+	 * All incoming messages are passed to this callback, including Heartbeat Request and Heartbeat Response
+	 * messages. However, responding to heartbeat is already done in osmo_pfcp_endpoint_handle_rx() before
+	 * rx_msg_cb() is invoked: a callback implementation can safely ignore Heartbeat Request messages. */
 	osmo_pfcp_endpoint_cb rx_msg_cb;
 
 	/* Custom timer definitions to use, if any. Relevant timers are: OSMO_PFCP_TIMER_N1, OSMO_PFCP_TIMER_T1,
