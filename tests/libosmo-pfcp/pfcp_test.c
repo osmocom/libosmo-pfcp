@@ -344,6 +344,7 @@ struct osmo_pfcp_msg tests[] = {
 			.upd_pdr = {
 				{
 					.pdr_id = 1,
+					.pdi_present = true,
 					.pdi = {
 						.source_iface = OSMO_PFCP_SOURCE_IFACE_ACCESS,
 						.local_f_teid_present = true,
