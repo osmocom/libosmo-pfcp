@@ -205,6 +205,10 @@ struct osmo_pfcp_msg tests[] = {
 					.precedence = 255,
 					.pdi = {
 						.source_iface = OSMO_PFCP_SOURCE_IFACE_CORE,
+						.network_inst_present = true,
+						.network_inst = {
+							.str = "foo",
+						},
 						.ue_ip_address_present = true,
 						.ue_ip_address = {
 							.ip_is_destination = true,
@@ -224,6 +228,10 @@ struct osmo_pfcp_msg tests[] = {
 						.source_iface = OSMO_PFCP_SOURCE_IFACE_ACCESS,
 						.local_f_teid_present = true,
 						.local_f_teid = f_teid_access_local,
+						.network_inst_present = true,
+						.network_inst = {
+							.str = "bar",
+						},
 					},
 					.outer_header_removal_present = true,
 					.outer_header_removal = {
@@ -318,6 +326,10 @@ struct osmo_pfcp_msg tests[] = {
 						.source_iface = OSMO_PFCP_SOURCE_IFACE_ACCESS,
 						.local_f_teid_present = true,
 						.local_f_teid = f_teid_access_local,
+						.network_inst_present = true,
+						.network_inst = {
+							.str = "baz",
+						},
 					},
 					.outer_header_removal_present = true,
 					.outer_header_removal = {
@@ -349,6 +361,10 @@ struct osmo_pfcp_msg tests[] = {
 						.source_iface = OSMO_PFCP_SOURCE_IFACE_ACCESS,
 						.local_f_teid_present = true,
 						.local_f_teid = f_teid_access_local,
+						.network_inst_present = true,
+						.network_inst = {
+							.str = "moo",
+						},
 					},
 					.outer_header_removal_present = true,
 					.outer_header_removal = {

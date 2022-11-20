@@ -99,6 +99,7 @@ static const struct osmo_gtlv_gen_ie iface_type = {
 static const struct osmo_gtlv_gen_ie_o ies_in_pdi[] = {
 	Ms(source_iface),
 	O(f_teid, "local_f_teid"),
+	O(ALL_FROM_NAME, "network_inst"),
 	O(ALL_FROM_NAME, "ue_ip_address"),
 	Os(traffic_endpoint_id),
 	O(iface_type, "source_iface_type"),
