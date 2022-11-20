@@ -500,12 +500,31 @@ void test_enc_dec(void)
 	}
 }
 
+static const struct log_info_cat log_categories[] = {
+};
+
+const struct log_info log_info = {
+	.cat = log_categories,
+	.num_cat = ARRAY_SIZE(log_categories),
+};
+
 int main(int argc, char **argv)
 {
 	ctx = talloc_named_const(NULL, 0, "pfcp_test");
 	msgb_talloc_ctx_init(ctx, 0);
 
+	/* If libosmo-pfcp encounters encoding/decoding errors, it causes logging in DLPFCP. */
+	osmo_init_logging2(ctx, &log_info);
+	log_set_print_category_hex(osmo_stderr_target, 0);
+	log_set_print_category(osmo_stderr_target, 1);
+	log_set_print_level(osmo_stderr_target, 1);
+	log_set_print_filename2(osmo_stderr_target, LOG_FILENAME_NONE);
+	log_set_print_timestamp(osmo_stderr_target, 0);
+	log_set_print_extended_timestamp(osmo_stderr_target, 0);
+
 	test_enc_dec();
+
+	log_fini();
 
 	talloc_free(ctx);
 	return 0;
