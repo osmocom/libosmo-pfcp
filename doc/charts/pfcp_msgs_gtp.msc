@@ -1,0 +1,91 @@
+msc {
+  hscale="1";
+  sgsn[label="SGSN\n123.44.0.9"],sgwc[label="SGW-C\n123.44.0.5"],sgwu[label="SGW-U\n123.44.0.6"],pgwc[label="PGW-C\n123.44.0.7"],pgwu[label="PGW-U\n123.44.0.8"];
+
+  sgsn <=> sgwc [label="S4-C GTPv2-C"];
+  sgwc <=> sgwu [label="Sxa PFCP"];
+  sgsn <=> sgwu [label="S4-U GTPv1-U"];
+  sgwc <=> pgwc [label="S5-C GTPv2-C"];
+  pgwc <=> pgwu [label="Sxb PFCP"];
+  sgwu <=> pgwu [label="S5-U GTPv1-U"];
+
+  ...;
+
+  sgsn => sgwc [label="GTP Create Session Request"];
+  sgsn note sgwc [label="F-TEID S11 = 123.44.0.9,0x004\nF-TEID S5 = 123.44.0.7,0x000\nPDN addr alloc = IPv4 192.168.100.2"];
+
+  |||;
+  |||;
+
+  sgwc => sgwu [label="PFCP Session Establishment Request"];
+  sgwc note sgwu [label="2x Create PDR\nF-TEID = CHOOSE\nFAR = NOCP,BUFF"];
+
+  |||;
+  |||;
+
+  sgwc <= sgwu [label="PFCP Session Establishment Response"];
+  sgwc note sgwu [label="Created PDR F-TEID 123.44.0.6,0x015\nCreated PDR F-TEID 123.44.0.6,0x016"];
+
+  |||;
+  |||;
+
+  sgwc => pgwc [label="GTP Create Session Request"];
+  sgwc note pgwc [label="F-TEID S5 = 123.44.0.5,0x00b\nPDN addr alloc = IPv4 192.168.100.2\nBearer Ctx: F-TEID S5 = 123.44.0.6,0x015"];
+
+  |||;
+  |||;
+
+  pgwc => pgwu [label="PFCP Session Establishment Request"];
+  pgwc note pgwu [label="Create PDR 1:\nPDI: src-iface Core, UE IPv4 192.168.100.2\nFAR-1: FORW, dst-iface Access,\nhdr creation: GTP-U 123.44.0.6,0x015\n\nCreate PDR 2:\nPDI: src-iface Access, F-TEID = CHOOSE id:05\nhdr removal: GTP-U\nFAR-2: FORW, dst-iface Core\n\nCreate PDR 3:\nPDI: src-iface CP-function, F-TEID = CHOOSE\nhdr removal: GTP-U\nFAR-1\n\nCreate PDR 4:\nPDI: src-iface Access, F-TEID = CHOOSE id:05, SDF Filter\nhdr removal: GTP-U\nFAR-3: FORW, dst-iface CP-Function,\nhdr creation: GTP-U 123.44.0.7,0x00b"];
+
+  |||;
+
+  pgwc <= pgwu [label="PFCP Session Establishment Response"];
+  pgwc note pgwu [label="Created PDR-1\nCreated PDR-2: F-TEID = 123.44.0.8,0x01e\nCreated PDR-3: F-TEID = 123.44.0.8,0x01f\nCreated PDR-4: F-TEID = 123.44.0.8,0x01e"];
+
+  |||;
+  |||;
+
+  sgwc <= pgwc [label="GTP Create Session Response"];
+  sgwc note pgwc [label="TEID: 0x00b\nF-TEID: 123.44.0.7,0x00b\nPDN Addr: 192.168.100.2\nBearer Ctx: F-TEID S5 123.44.0.8,0x01e"];
+
+  |||;
+  |||;
+
+  sgwc => sgwu [label="PFCP Session Modification Request"];
+  sgwc note sgwu [label="Update FAR-2: FORW, dst-iface Core,\nhdr creation GTP-U 123.44.0.8,0x01e"];
+
+  |||;
+
+  sgwc <= sgwu [label="PFCP Session Modification Response"];
+
+  |||;
+  |||;
+
+  sgsn <= sgwc [label="GTP Create Session Response"];
+  sgsn note sgwc [label="TEID: 0x004\nF-TEID S11/S4: 123.44.0.5,0x007\nF-TEID S5/S8: 123.44.0.7,0x00b\nPDN Addr: 192.168.100.2\nBearer Ctx:\nF-TEID S1-U: 123.44.0.6,0x016\nF-TEID S5/S8: 123.44.0.8,0x01e"];
+
+  |||;
+  |||;
+
+  sgsn => sgwc [label="GTP Modify Bearer Request"];
+  sgsn note sgwc [label="TEID: 0x007\nBearer Ctx:\nF-TEID S1-U: 192.168.104.167,0x32adb2ad"];
+
+  |||;
+  |||;
+
+  sgwc => sgwu [label="PFCP Session Modification Request"];
+  sgwc note sgwu [label="Update FAR-1: FORW, dst-iface Access,\nhdr creation: GTP-U 192.168.104.167,0x32adb2ad"];
+
+  |||;
+  |||;
+
+
+  sgwc <= sgwu [label="PFCP Session Modification Response"];
+
+  |||;
+
+  sgsn <= sgwc [label="GTP Modify Bearer Response"];
+  sgsn note sgwc [label="TEID: 0x004\nBearer Ctx:\nF-TEID S1-U: 192.168.104.167,0x32adb2ad"];
+
+}

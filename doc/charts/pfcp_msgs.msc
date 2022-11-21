@@ -1,0 +1,60 @@
+msc {
+  hscale="1";
+  upf[label="User Plane function"],cpf[label="Control Plane function"];
+
+  cpf rbox cpf [label="Look up UPF,\npick any one of the available\nIP addrs for the UPF"];
+
+  ...;
+  upf abox cpf [label="not yet associated"];
+  upf rbox cpf [label="reject any session related msgs"];
+  ...;
+
+  upf <<= cpf [label="PFCP Association Setup Request\nCP function Node Id, features"];
+  upf =>> cpf [label="PFCP Association Setup Response\nUP function Node Id, features"];
+  upf abox cpf [label="associated"];
+  upf rbox cpf [label="start Heartbeat checking"];
+  ...;
+  upf <<= cpf [label="Heartbeat Request"];
+  upf =>> cpf [label="Heartbeat Response"];
+  ...;
+  upf =>> cpf [label="Heartbeat Request"];
+  upf <<= cpf [label="Heartbeat Response"];
+  ...;
+
+  upf <<= cpf [label="Session Establishment Request\nCP Node-Id\nCP F-SEID\n1+ Packet Detection Rule(s)\n1+ Forward Action Rule(s)"];
+  upf =>> cpf [label="Session Establishment Response"];
+
+  upf <<= cpf [label="Session Modification Request"];
+  upf =>> cpf [label="Session Modification Response"];
+
+  upf <<= cpf [label="Session Deletion Request"];
+  upf =>> cpf [label="Session Deletion Response"];
+
+  ...;
+  upf rbox cpf [label="F-SEID: accept any other IP addrs than peer's Node Id"];
+  ...;
+
+  --- [label="Graceful release initiated by CP"];
+
+  upf <<= cpf [label="Association Update Request\nwith PFCP Association Release Preparation Start = 1"];
+  upf =>> cpf [label="Association Update Response"];
+  upf =>> cpf [label="Session Report Request\nto report non-zero usage reports,\nat least one message per PFCP Session"];
+  upf <<= cpf [label="Association Release Request"];
+  upf =>> cpf [label="Association Release Response"];
+
+  --- [label="Graceful release initiated by UP"];
+
+  upf =>> cpf [label="Association Update Request\nwith PFCP Association Release Preparation = 1"];
+  cpf abox cpf [label="refrain from establishing sessions"];
+  upf <<= cpf [label="Association Update Response"];
+  upf <<= cpf [label="Session Deletion Request(s)\nto collect usage reports\nper session"];
+  upf =>> cpf [label="Session Deletion Response(s)"];
+  cpf rbox cpf [label="wait Graceful Release Period"];
+  upf <<= cpf [label="Association Release Request"];
+  upf =>> cpf [label="Association Release Response"];
+
+  --- [label="Release (immediate)"];
+
+  upf <<= cpf [label="Association Release Request"];
+  upf =>> cpf [label="Association Release Response"];
+}
