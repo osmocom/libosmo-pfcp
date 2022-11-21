@@ -13,7 +13,7 @@ AM_CFLAGS = \
 	$(LIBOSMOCORE_CFLAGS) \
 	$(NULL)
 
-noinst_PROGRAMS = \
+check_PROGRAMS = \
 	gtlv_test \
 	gtlv_dec_enc_test \
 	$(NULL)

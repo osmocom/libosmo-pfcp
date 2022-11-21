@@ -9,7 +9,7 @@ AM_CFLAGS = \
 	$(LIBOSMOCORE_CFLAGS) \
 	$(NULL)
 
-noinst_PROGRAMS = \
+check_PROGRAMS = \
 	gen__myproto_ies_auto \
 	gtlv_gen_test \
 	$(NULL)
