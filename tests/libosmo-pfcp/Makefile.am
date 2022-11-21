@@ -22,9 +22,9 @@ pfcp_test_SOURCES = \
 	$(NULL)
 
 pfcp_test_LDADD = \
-	$(LIBOSMOCORE_LIBS) \
 	$(top_builddir)/src/libosmo-pfcp/libosmo-pfcp.la \
 	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.la \
+	$(LIBOSMOCORE_LIBS) \
 	$(NULL)
 
 .PHONY: update_exp
