@@ -494,16 +494,20 @@ uint64_t osmo_pfcp_next_seid(uint64_t *next_seid_state)
 	return *next_seid_state;
 }
 
+/* Set either dst->v4 or dst->v6 to addr, depending on addr->family. Set the IP address to addr and port to 0, not
+ * copying the port information from addr. Return zero on success, negative on error (i.e. no known family in addr). */
 int osmo_pfcp_ip_addrs_set(struct osmo_pfcp_ip_addrs *dst, const struct osmo_sockaddr *addr)
 {
 	switch (addr->u.sas.ss_family) {
 	case AF_INET:
 		dst->v4_present = true;
 		dst->v4 = *addr;
+		osmo_sockaddr_set_port(&dst->v4.u.sa, 0);
 		return 0;
 	case AF_INET6:
 		dst->v6_present = true;
 		dst->v6 = *addr;
+		osmo_sockaddr_set_port(&dst->v6.u.sa, 0);
 		return 0;
 	default:
 		return -ENOTSUP;
