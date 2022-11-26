@@ -514,26 +514,41 @@ int osmo_pfcp_enc_f_seid(struct osmo_gtlv_put *tlv, const void *decoded_struct, 
 	return 0;
 }
 
-static int ip_addrs_to_str_buf(char *buf, size_t buflen, const struct osmo_pfcp_ip_addrs *addrs)
+int osmo_pfcp_ip_addrs_to_str_buf(char *buf, size_t buflen, const struct osmo_pfcp_ip_addrs *addrs)
 {
 	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+	if (!addrs) {
+		OSMO_STRBUF_PRINTF(sb, "NULL-addr");
+		return sb.chars_needed;
+	}
+	if (!(addrs->v4_present || addrs->v6_present)) {
+		OSMO_STRBUF_PRINTF(sb, "empty:-addr");
+		return sb.chars_needed;
+	}
 	if (addrs->v4_present) {
-		OSMO_STRBUF_PRINTF(sb, ",v4:");
+		OSMO_STRBUF_PRINTF(sb, "v4:");
 		OSMO_STRBUF_APPEND(sb, osmo_sockaddr_to_str_buf2, &addrs->v4);
 	}
+	if (addrs->v4_present && addrs->v6_present)
+		OSMO_STRBUF_PRINTF(sb, ",");
 	if (addrs->v6_present) {
-		OSMO_STRBUF_PRINTF(sb, ",v6:");
+		OSMO_STRBUF_PRINTF(sb, "v6:");
 		OSMO_STRBUF_APPEND(sb, osmo_sockaddr_to_str_buf2, &addrs->v6);
 	}
 	return sb.chars_needed;
+}
+
+char *osmo_pfcp_ip_addrs_to_str_c(void *ctx, const struct osmo_pfcp_ip_addrs *addrs)
+{
+	OSMO_NAME_C_IMPL(ctx, 32, "ERROR", osmo_pfcp_ip_addrs_to_str_buf, addrs)
 }
 
 int osmo_pfcp_enc_to_str_f_seid(char *buf, size_t buflen, const void *encode_from)
 {
 	const struct osmo_pfcp_ie_f_seid *f_seid = encode_from;
 	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
-	OSMO_STRBUF_PRINTF(sb, "0x%"PRIx64, f_seid->seid);
-	OSMO_STRBUF_APPEND(sb, ip_addrs_to_str_buf, &f_seid->ip_addr);
+	OSMO_STRBUF_PRINTF(sb, "0x%"PRIx64",", f_seid->seid);
+	OSMO_STRBUF_APPEND(sb, osmo_pfcp_ip_addrs_to_str_buf, &f_seid->ip_addr);
 	return sb.chars_needed;
 }
 
@@ -640,8 +655,8 @@ int osmo_pfcp_ie_f_teid_to_str_buf(char *buf, size_t buflen, const struct osmo_p
 		if (ft->choose.choose_id_present)
 			OSMO_STRBUF_PRINTF(sb, "-id%u", ft->choose.choose_id);
 	} else {
-		OSMO_STRBUF_PRINTF(sb, "TEID-0x%x", ft->fixed.teid);
-		OSMO_STRBUF_APPEND(sb, ip_addrs_to_str_buf, &ft->fixed.ip_addr);
+		OSMO_STRBUF_PRINTF(sb, "TEID-0x%x,", ft->fixed.teid);
+		OSMO_STRBUF_APPEND(sb, osmo_pfcp_ip_addrs_to_str_buf, &ft->fixed.ip_addr);
 	}
 	return sb.chars_needed;
 }
@@ -849,7 +864,10 @@ int osmo_pfcp_enc_to_str_outer_header_creation(char *buf, size_t buflen, const v
 	OSMO_STRBUF_APPEND(sb, osmo_pfcp_bits_to_str_buf, ohc->desc_bits, osmo_pfcp_outer_header_creation_strs);
 	if (ohc->teid_present)
 		OSMO_STRBUF_PRINTF(sb, ",TEID:0x%x", ohc->teid);
-	OSMO_STRBUF_APPEND(sb, ip_addrs_to_str_buf, &ohc->ip_addr);
+
+	OSMO_STRBUF_PRINTF(sb, ",");
+	OSMO_STRBUF_APPEND(sb, osmo_pfcp_ip_addrs_to_str_buf, &ohc->ip_addr);
+
 	if (ohc->port_number_present)
 		OSMO_STRBUF_PRINTF(sb, ",port:%u", ohc->port_number);
 	if (ohc->c_tag_present)
@@ -1015,7 +1033,11 @@ int osmo_pfcp_enc_to_str_ue_ip_address(char *buf, size_t buflen, const void *enc
 		OSMO_STRBUF_PRINTF(sb, "%schv4", sb.pos ? "," : "");
 	if (uia->ip_is_destination)
 		OSMO_STRBUF_PRINTF(sb, "%sdst", sb.pos ? "," : "");
-	OSMO_STRBUF_APPEND(sb, ip_addrs_to_str_buf, &uia->ip_addr);
+
+	if (sb.pos)
+		OSMO_STRBUF_PRINTF(sb, ",");
+	OSMO_STRBUF_APPEND(sb, osmo_pfcp_ip_addrs_to_str_buf, &uia->ip_addr);
+
 	if (uia->ipv6_prefix_delegation_bits_present)
 		OSMO_STRBUF_PRINTF(sb, ",ipv6-prefix-deleg:%x", uia->ipv6_prefix_delegation_bits);
 	if (uia->ipv6_prefix_length_present)

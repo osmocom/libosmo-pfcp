@@ -37,6 +37,8 @@ struct osmo_pfcp_ip_addrs {
 };
 
 int osmo_pfcp_ip_addrs_set(struct osmo_pfcp_ip_addrs *dst, const struct osmo_sockaddr *addr);
+int osmo_pfcp_ip_addrs_to_str_buf(char *buf, size_t buflen, const struct osmo_pfcp_ip_addrs *addrs);
+char *osmo_pfcp_ip_addrs_to_str_c(void *ctx, const struct osmo_pfcp_ip_addrs *addrs);
 
 /* 3GPP TS 29.244 8.2.38, IETF RFC 1035 3.1 */
 struct osmo_pfcp_ie_node_id {
