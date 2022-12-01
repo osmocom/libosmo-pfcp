@@ -411,13 +411,15 @@ void osmo_pfcp_bits_set(uint8_t *bits, unsigned int bitpos, bool val)
 int osmo_pfcp_bits_to_str_buf(char *buf, size_t buflen, const uint8_t *bits, const struct value_string *bit_strs)
 {
 	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
-	OSMO_STRBUF_PRINTF(sb, "(");
+	bool first = true;
 	for (; bit_strs->str; bit_strs++) {
 		if (osmo_pfcp_bits_get(bits, bit_strs->value)) {
-			OSMO_STRBUF_PRINTF(sb, " %s", bit_strs->str);
+			OSMO_STRBUF_PRINTF(sb, "%s%s", first ? "" : "+", bit_strs->str);
+			first = false;
 		}
 	}
-	OSMO_STRBUF_PRINTF(sb, " )");
+	if (first)
+		OSMO_STRBUF_PRINTF(sb, "-");
 	return sb.chars_needed;
 }
 

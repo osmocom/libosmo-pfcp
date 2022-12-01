@@ -34,7 +34,7 @@ parsed == orig
 
 === start test_enc_dec[3]
 encoding: ASSOC_SETUP_RESP
-PFCPv1 ASSOC_SETUP_RESP hdr={seq=4} ies={ 'Node ID'=fqdn:"example.com" 'Cause'=Request accepted (success) 'Recovery Time Stamp'=724249387 'UP Function Features'=( BUCP PDIU ) }
+PFCPv1 ASSOC_SETUP_RESP hdr={seq=4} ies={ 'Node ID'=fqdn:"example.com" 'Cause'=Request accepted (success) 'Recovery Time Stamp'=724249387 'UP Function Features'=BUCP+PDIU }
 osmo_pfcp_msg_encode() rc = 0
 20 06 00 2c 00 00 04 00 00 3c 00 0d 02 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 13 00 01 01 00 60 00 04 2b 2b 2b 2b 00 2b 00 06 01 02 00 00 00 00 .
 osmo_pfcp_msg_decode_header() rc = 48
@@ -67,7 +67,7 @@ parsed == orig
 
 === start test_enc_dec[6]
 encoding: SESSION_EST_REQ
-PFCPv1 SESSION_EST_REQ hdr={seq=7 SEID=0x0} ies={ 'Node ID'=v4:127.0.0.1 'F-SEID'=0x1234567890abcdef,v4:10.9.8.7 'Create PDR'={ { 'PDR ID'=1 'Precedence'=255 'PDI'={ 'Source Interface'=Core 'Network Instance'="foo" 'UE IP Address'=,dst,v4:192.168.0.23 } 'FAR ID'=1 }, { 'PDR ID'=2 'Precedence'=255 'PDI'={ 'Source Interface'=Access 'F-TEID'=CHOOSE-v4 'Network Instance'="bar" } 'Outer Header Removal'=GTP_U_UDP_IPV4 'FAR ID'=2 } } 'Create FAR'={ { 'FAR ID'=1 'Apply Action'=( FORW ) 'Forwarding Parameters'={ 'Destination Interface'=Access 'Outer Header Creation'=( GTP_U_UDP_IPV4 ),TEID:0xabcdef,v4:10.9.8.7 } }, { 'FAR ID'=2 'Apply Action'=( FORW ) 'Forwarding Parameters'={ 'Destination Interface'=Core } } } }
+PFCPv1 SESSION_EST_REQ hdr={seq=7 SEID=0x0} ies={ 'Node ID'=v4:127.0.0.1 'F-SEID'=0x1234567890abcdef,v4:10.9.8.7 'Create PDR'={ { 'PDR ID'=1 'Precedence'=255 'PDI'={ 'Source Interface'=Core 'Network Instance'="foo" 'UE IP Address'=,dst,v4:192.168.0.23 } 'FAR ID'=1 }, { 'PDR ID'=2 'Precedence'=255 'PDI'={ 'Source Interface'=Access 'F-TEID'=CHOOSE-v4 'Network Instance'="bar" } 'Outer Header Removal'=GTP_U_UDP_IPV4 'FAR ID'=2 } } 'Create FAR'={ { 'FAR ID'=1 'Apply Action'=FORW 'Forwarding Parameters'={ 'Destination Interface'=Access 'Outer Header Creation'=GTP_U_UDP_IPV4,TEID:0xabcdef,v4:10.9.8.7 } }, { 'FAR ID'=2 'Apply Action'=FORW 'Forwarding Parameters'={ 'Destination Interface'=Core } } } }
 osmo_pfcp_msg_encode() rc = 0
 21 32 00 d3 00 00 00 00 00 00 00 00 00 00 07 00 00 3c 00 05 00 7f 00 00 01 00 39 00 0d 02 12 34 56 78 90 ab cd ef 0a 09 08 07 00 01 00 30 00 38 00 02 00 01 00 1d 00 04 00 00 00 ff 00 02 00 16 00 14 00 01 01 00 16 00 04 03 66 6f 6f 00 5d 00 05 06 c0 a8 00 17 00 6c 00 04 00 00 00 01 00 01 00 31 00 38 00 02 00 02 00 1d 00 04 00 00 00 ff 00 02 00 12 00 14 00 01 00 00 15 00 01 05 00 16 00 04 03 62 61 72 00 5f 00 01 00 00 6c 00 04 00 00 00 02 00 03 00 25 00 6c 00 04 00 00 00 01 00 2c 00 02 02 00 00 04 00 13 00 2a 00 01 00 00 54 00 0a 01 00 00 ab cd ef 0a 09 08 07 00 03 00 17 00 6c 00 04 00 00 00 02 00 2c 00 02 02 00 00 04 00 05 00 2a 00 01 01 .
 osmo_pfcp_msg_decode_header() rc = 215
@@ -89,7 +89,7 @@ parsed == orig
 
 === start test_enc_dec[8]
 encoding: SESSION_MOD_REQ
-PFCPv1 SESSION_MOD_REQ hdr={seq=9 SEID=0x0} ies={ 'Remove PDR'={ { 'PDR ID'=1 } } 'Remove FAR'={ { 'FAR ID'=1 } } 'Create PDR'={ { 'PDR ID'=3 'Precedence'=255 'PDI'={ 'Source Interface'=Access 'F-TEID'=CHOOSE-v4 'Network Instance'="baz" } 'Outer Header Removal'=GTP_U_UDP_IPV4 'FAR ID'=3 } } 'Create FAR'={ { 'FAR ID'=3 'Apply Action'=( FORW ) 'Forwarding Parameters'={ 'Destination Interface'=Access 'Outer Header Creation'=( GTP_U_UDP_IPV4 ),TEID:0xabcdef,v4:10.9.8.7 } } } 'Update PDR'={ { 'PDR ID'=1 'Outer Header Removal'=GTP_U_UDP_IPV4 'PDI'={ 'Source Interface'=Access 'F-TEID'=CHOOSE-v4 'Network Instance'="moo" } 'FAR ID'=1 } } 'Update FAR'={ { 'FAR ID'=1 'Update Forwarding Parameters'={ 'Network Instance'="internet" } } } }
+PFCPv1 SESSION_MOD_REQ hdr={seq=9 SEID=0x0} ies={ 'Remove PDR'={ { 'PDR ID'=1 } } 'Remove FAR'={ { 'FAR ID'=1 } } 'Create PDR'={ { 'PDR ID'=3 'Precedence'=255 'PDI'={ 'Source Interface'=Access 'F-TEID'=CHOOSE-v4 'Network Instance'="baz" } 'Outer Header Removal'=GTP_U_UDP_IPV4 'FAR ID'=3 } } 'Create FAR'={ { 'FAR ID'=3 'Apply Action'=FORW 'Forwarding Parameters'={ 'Destination Interface'=Access 'Outer Header Creation'=GTP_U_UDP_IPV4,TEID:0xabcdef,v4:10.9.8.7 } } } 'Update PDR'={ { 'PDR ID'=1 'Outer Header Removal'=GTP_U_UDP_IPV4 'PDI'={ 'Source Interface'=Access 'F-TEID'=CHOOSE-v4 'Network Instance'="moo" } 'FAR ID'=1 } } 'Update FAR'={ { 'FAR ID'=1 'Update Forwarding Parameters'={ 'Network Instance'="internet" } } } }
 osmo_pfcp_msg_encode() rc = 0
 21 34 00 ca 00 00 00 00 00 00 00 00 00 00 09 00 00 0f 00 06 00 38 00 02 00 01 00 10 00 08 00 6c 00 04 00 00 00 01 00 01 00 31 00 38 00 02 00 03 00 1d 00 04 00 00 00 ff 00 02 00 12 00 14 00 01 00 00 15 00 01 05 00 16 00 04 03 62 61 7a 00 5f 00 01 00 00 6c 00 04 00 00 00 03 00 03 00 25 00 6c 00 04 00 00 00 03 00 2c 00 02 02 00 00 04 00 13 00 2a 00 01 00 00 54 00 0a 01 00 00 ab cd ef 0a 09 08 07 00 09 00 29 00 38 00 02 00 01 00 5f 00 01 00 00 02 00 12 00 14 00 01 00 00 15 00 01 05 00 16 00 04 03 6d 6f 6f 00 6c 00 04 00 00 00 01 00 0a 00 19 00 6c 00 04 00 00 00 01 00 0b 00 0d 00 16 00 09 08 69 6e 74 65 72 6e 65 74 .
 osmo_pfcp_msg_decode_header() rc = 206
