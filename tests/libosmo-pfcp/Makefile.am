@@ -7,6 +7,7 @@ AM_CPPFLAGS = \
 AM_CFLAGS = \
 	-Wall \
 	$(LIBOSMOCORE_CFLAGS) \
+	$(LIBOSMOGSM_CFLAGS) \
 	$(NULL)
 
 check_PROGRAMS = \
@@ -24,6 +25,7 @@ pfcp_test_SOURCES = \
 pfcp_test_LDADD = \
 	$(top_builddir)/src/libosmo-pfcp/libosmo-pfcp.la \
 	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.la \
+	$(LIBOSMOGSM_LIBS) \
 	$(LIBOSMOCORE_LIBS) \
 	$(NULL)
 

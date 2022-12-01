@@ -29,6 +29,7 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/utils.h>
 #include <osmocom/core/msgb.h>
+#include <osmocom/gsm/apn.h>
 
 #include <osmocom/gtlv/gtlv.h>
 
@@ -79,6 +80,13 @@
 				     "at value octet %d: %zu octets remaining, but " #NAME " requires length >= " #MIN_VAL, \
 				     (int)((POS) - tlv->val), \
 				     tlv->len - ((POS) - tlv->val)); \
+	} while (0)
+
+#define ENSURE_RANGE(NAME, VAL, MINVAL, MAXVAL) \
+	do { \
+		if ((VAL) < (MINVAL) || (VAL) > (MAXVAL)) \
+			RETURN_ERROR(-ERANGE, "%s == %d, should be in range %d .. %d", NAME, \
+				     (int)(VAL), (int)(MINVAL), (int)(MAXVAL)); \
 	} while (0)
 
 void osmo_pfcp_ie_f_seid_set(struct osmo_pfcp_ie_f_seid *f_seid, uint64_t seid, const struct osmo_sockaddr *remote_addr)
@@ -698,16 +706,21 @@ int osmo_pfcp_enc_to_str_apply_action(char *buf, size_t buflen, const void *enco
 int osmo_pfcp_dec_network_inst(void *decoded_struct, void *decode_to, const struct osmo_gtlv_load *tlv)
 {
 	struct osmo_pfcp_ie_network_inst *network_inst = decode_to;
-	osmo_strlcpy(network_inst->str, (const char *)tlv->val, OSMO_MIN(sizeof(network_inst->str), tlv->len+1));
+	ENSURE_RANGE("Network Instance value length", tlv->len, 1, sizeof(network_inst->str));
+	if (osmo_apn_to_str(network_inst->str, tlv->val, tlv->len) == NULL)
+		RETURN_ERROR(-EINVAL, "osmo_apn_to_str() failed");
 	return 0;
 }
 
 int osmo_pfcp_enc_network_inst(struct osmo_gtlv_put *tlv, const void *decoded_struct, const void *encode_from)
 {
 	const struct osmo_pfcp_ie_network_inst *network_inst = encode_from;
-	unsigned int l = strlen(network_inst->str);
-	if (l)
-		memcpy(msgb_put(tlv->dst, l), network_inst->str, l);
+	int rc;
+
+	rc = osmo_apn_from_str(tlv->dst->tail, msgb_tailroom(tlv->dst), network_inst->str);
+	if (rc <= 0)
+		RETURN_ERROR(-EINVAL, "osmo_apn_from_str(\"%s\") failed", network_inst->str);
+	msgb_put(tlv->dst, rc);
 	return 0;
 }
 
