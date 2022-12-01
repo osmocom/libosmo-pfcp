@@ -317,8 +317,9 @@ int osmo_pfcp_dec_node_id(void *decoded_struct, void *decode_to, const struct os
 		osmo_sockaddr_from_octets(&node_id->ip, ip, ip_len);
 		break;
 	case OSMO_PFCP_NODE_ID_T_FQDN:
-		/* Copy and add a trailing nul */
-		OSMO_STRLCPY_ARRAY(node_id->fqdn, ip);
+		ENSURE_RANGE("FQDN value length", ip_len, 1, sizeof(node_id->fqdn));
+		if (osmo_apn_to_str(node_id->fqdn, ip, ip_len) == NULL)
+			RETURN_ERROR(-EINVAL, "FQDN: osmo_apn_to_str() failed");
 		break;
 	default:
 		RETURN_ERROR(-EINVAL, "Invalid Node ID Type: %d", node_id->type);
@@ -330,6 +331,7 @@ int osmo_pfcp_enc_node_id(struct osmo_gtlv_put *tlv, const void *decoded_struct,
 {
 	unsigned int l;
 	const struct osmo_pfcp_ie_node_id *node_id = encode_from;
+	int rc;
 	msgb_put_u8(tlv->dst, node_id->type);
 	switch (node_id->type) {
 	case OSMO_PFCP_NODE_ID_T_IPV4:
@@ -341,9 +343,10 @@ int osmo_pfcp_enc_node_id(struct osmo_gtlv_put *tlv, const void *decoded_struct,
 		osmo_sockaddr_to_octets(msgb_put(tlv->dst, l), l, &node_id->ip);
 		break;
 	case OSMO_PFCP_NODE_ID_T_FQDN:
-		l = strnlen(node_id->fqdn, sizeof(node_id->fqdn));
-		/* Copy without trailing nul */
-		memcpy((char *)msgb_put(tlv->dst, l), node_id->fqdn, l);
+		rc = osmo_apn_from_str(tlv->dst->tail, msgb_tailroom(tlv->dst), node_id->fqdn);
+		if (rc <= 0)
+			RETURN_ERROR(-EINVAL, "osmo_apn_from_str(\"%s\") failed", node_id->fqdn);
+		msgb_put(tlv->dst, rc);
 		break;
 	default:
 		RETURN_ERROR(-EINVAL, "Invalid Node ID Type: %d", node_id->type);

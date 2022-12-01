@@ -36,8 +36,8 @@ parsed == orig
 encoding: ASSOC_SETUP_RESP
 PFCPv1 ASSOC_SETUP_RESP hdr={seq=4} ies={ 'Node ID'=fqdn:"example.com" 'Cause'=Request accepted (success) 'Recovery Time Stamp'=724249387 'UP Function Features'=( BUCP PDIU ) }
 osmo_pfcp_msg_encode() rc = 0
-20 06 00 2b 00 00 04 00 00 3c 00 0c 02 65 78 61 6d 70 6c 65 2e 63 6f 6d 00 13 00 01 01 00 60 00 04 2b 2b 2b 2b 00 2b 00 06 01 02 00 00 00 00 .
-osmo_pfcp_msg_decode_header() rc = 47
+20 06 00 2c 00 00 04 00 00 3c 00 0d 02 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 13 00 01 01 00 60 00 04 2b 2b 2b 2b 00 2b 00 06 01 02 00 00 00 00 .
+osmo_pfcp_msg_decode_header() rc = 48
 rc == msgb_length()
 osmo_pfcp_msg_decode_tlv() rc = 0
 parsed == orig
