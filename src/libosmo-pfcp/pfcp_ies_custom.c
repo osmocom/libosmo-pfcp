@@ -813,42 +813,42 @@ int osmo_pfcp_enc_outer_header_creation(struct osmo_gtlv_put *tlv, const void *d
 	s_tag = osmo_pfcp_bits_get(ohc->desc_bits, OSMO_PFCP_OUTER_HEADER_CREATION_S_TAG);
 
 	if ((gtp_u_udp_ipv4 || gtp_u_udp_ipv6) != (ohc->teid_present))
-		RETURN_ERROR(-EINVAL, "teid_present = %s does not match the description bits 0x%02x\n",
+		RETURN_ERROR(-EINVAL, "teid_present = %s does not match the description bits 0x%02x",
 			     ohc->teid_present ? "true" : "false",
 			     ohc->desc_bits[0]);
 	if (ohc->teid_present)
 		msgb_put_u32(tlv->dst, ohc->teid);
 
 	if ((gtp_u_udp_ipv4 || udp_ipv4 || ipv4) != ohc->ip_addr.v4_present)
-		RETURN_ERROR(-EINVAL, "ipv4_addr_present = %s does not match the description bits 0x%02x\n",
+		RETURN_ERROR(-EINVAL, "ipv4_addr_present = %s does not match the description bits 0x%02x",
 			     ohc->ip_addr.v4_present ? "true" : "false",
 			     ohc->desc_bits[0]);
 	if (ohc->ip_addr.v4_present)
 		osmo_sockaddr_to_octets(msgb_put(tlv->dst, 4), 4, &ohc->ip_addr.v4);
 
 	if ((gtp_u_udp_ipv6 || udp_ipv6 || ipv6) != ohc->ip_addr.v6_present)
-		RETURN_ERROR(-EINVAL, "ipv6_addr_present = %s does not match the description bits 0x%02x\n",
+		RETURN_ERROR(-EINVAL, "ipv6_addr_present = %s does not match the description bits 0x%02x",
 			     ohc->ip_addr.v6_present ? "true" : "false",
 			     ohc->desc_bits[0]);
 	if (ohc->ip_addr.v6_present)
 		osmo_sockaddr_to_octets(msgb_put(tlv->dst, 16), 16, &ohc->ip_addr.v6);
 
 	if ((udp_ipv4 || udp_ipv6) != ohc->port_number_present)
-		RETURN_ERROR(-EINVAL, "port_number_present = %s does not match the description bits 0x%02x\n",
+		RETURN_ERROR(-EINVAL, "port_number_present = %s does not match the description bits 0x%02x",
 			     ohc->port_number_present ? "true" : "false",
 			     ohc->desc_bits[0]);
 	if (ohc->port_number_present)
 		msgb_put_u16(tlv->dst, ohc->port_number);
 
 	if (c_tag != ohc->c_tag_present)
-		RETURN_ERROR(-EINVAL, "c_tag_present = %s does not match the description bits 0x%02x%02x\n",
+		RETURN_ERROR(-EINVAL, "c_tag_present = %s does not match the description bits 0x%02x%02x",
 			     ohc->c_tag_present ? "true" : "false",
 			     ohc->desc_bits[1], ohc->desc_bits[0]);
 	if (ohc->c_tag_present)
 		osmo_store32be_ext(ohc->c_tag, msgb_put(tlv->dst, 3), 3);
 
 	if (s_tag != ohc->s_tag_present)
-		RETURN_ERROR(-EINVAL, "s_tag_present = %s does not match the description bits 0x%02x%02x\n",
+		RETURN_ERROR(-EINVAL, "s_tag_present = %s does not match the description bits 0x%02x%02x",
 			     ohc->s_tag_present ? "true" : "false",
 			     ohc->desc_bits[1], ohc->desc_bits[0]);
 	if (ohc->s_tag_present)
