@@ -161,6 +161,10 @@ struct osmo_pfcp_ie_outer_header_creation {
 	uint32_t s_tag;
 };
 
+int osmo_pfcp_ie_outer_header_creation_to_str_buf(char *buf, size_t buflen,
+						  const struct osmo_pfcp_ie_outer_header_creation *ohc);
+char *osmo_pfcp_ie_outer_header_creation_to_str_c(void *ctx, const struct osmo_pfcp_ie_outer_header_creation *ohc);
+
 /* 3GPP TS 29.244 8.2.64. */
 struct osmo_pfcp_ie_outer_header_removal {
 	enum osmo_pfcp_outer_header_removal_desc desc;

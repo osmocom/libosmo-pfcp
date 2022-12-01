@@ -857,9 +857,9 @@ int osmo_pfcp_enc_outer_header_creation(struct osmo_gtlv_put *tlv, const void *d
 	return 0;
 }
 
-int osmo_pfcp_enc_to_str_outer_header_creation(char *buf, size_t buflen, const void *encode_from)
+int osmo_pfcp_ie_outer_header_creation_to_str_buf(char *buf, size_t buflen,
+						  const struct osmo_pfcp_ie_outer_header_creation *ohc)
 {
-	const struct osmo_pfcp_ie_outer_header_creation *ohc = encode_from;
 	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
 	OSMO_STRBUF_APPEND(sb, osmo_pfcp_bits_to_str_buf, ohc->desc_bits, osmo_pfcp_outer_header_creation_strs);
 	if (ohc->teid_present)
@@ -875,6 +875,16 @@ int osmo_pfcp_enc_to_str_outer_header_creation(char *buf, size_t buflen, const v
 	if (ohc->s_tag_present)
 		OSMO_STRBUF_PRINTF(sb, ",s-tag:%u", ohc->s_tag);
 	return sb.chars_needed;
+}
+
+char *osmo_pfcp_ie_outer_header_creation_to_str_c(void *ctx, const struct osmo_pfcp_ie_outer_header_creation *ohc)
+{
+	OSMO_NAME_C_IMPL(ctx, 128, "ERROR", osmo_pfcp_ie_outer_header_creation_to_str_buf, ohc)
+}
+
+int osmo_pfcp_enc_to_str_outer_header_creation(char *buf, size_t buflen, const void *encode_from)
+{
+	return osmo_pfcp_ie_outer_header_creation_to_str_buf(buf, buflen, encode_from);
 }
 
 int osmo_pfcp_dec_activate_predefined_rules(void *decoded_struct, void *decode_to, const struct osmo_gtlv_load *tlv)
