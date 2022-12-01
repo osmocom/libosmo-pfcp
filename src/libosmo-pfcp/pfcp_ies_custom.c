@@ -36,7 +36,7 @@
 #include <osmocom/pfcp/pfcp_strs.h>
 #include <osmocom/pfcp/pfcp_msg.h>
 
-/* Assumes presence of local variable osmo_pfcp_msg *m. m->log_ctx may be NULL. */
+/* Assumes presence of local variable decoded_struct to derive osmo_pfcp_msg* from. m->log_ctx may be NULL. */
 #define RETURN_ERROR(RC, FMT, ARGS...) \
 	do {\
 		OSMO_ASSERT(decoded_struct); \
