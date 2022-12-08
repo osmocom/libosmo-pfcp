@@ -218,8 +218,12 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, size_t decoded_stru
 			if (!iec->dec_func)
 				RETURN_ERROR(-EIO, gtlv->ti, "IE definition lacks a dec_func()");
 			rc = iec->dec_func(decoded_struct, membof(obj, obj_maxlen, memb_ofs), gtlv);
-			if (rc)
-				RETURN_ERROR(rc, gtlv->ti, "Error while decoding this IE");
+			if (rc) {
+				const size_t maxlen = 16;
+				RETURN_ERROR(rc, gtlv->ti, "Error while decoding this IE. L=%zu V=[ %s%s]",
+					     gtlv->len, osmo_hexdump(gtlv->val, OSMO_MIN(maxlen, gtlv->len)),
+					     gtlv->len > maxlen ? "..." : "");
+			}
 		}
 
 		if (multi_count_p) {
