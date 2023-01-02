@@ -110,7 +110,7 @@ static int osmo_gtlvs_decode_unordered(void *decoded_struct, size_t decoded_stru
 	 * any). */
 	for (;;) {
 		int rc;
-		bool *presence_flag_p;
+		bool *presence_flag_p = NULL;
 		unsigned int memb_next_array_idx;
 		unsigned int memb_ofs;
 		unsigned int ie_max_allowed_count;
