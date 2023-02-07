@@ -11,8 +11,8 @@ BuildRequires:  automake >= 1.9
 BuildRequires:  libtool >= 2
 BuildRequires:  lksctp-tools-devel
 BuildRequires:  pkgconfig >= 0.20
-BuildRequires:  pkgconfig(libosmocore) >= 1.7.0
-BuildRequires:  pkgconfig(libosmogsm) >= 1.7.0
+BuildRequires:  pkgconfig(libosmocore) >= 1.8.0
+BuildRequires:  pkgconfig(libosmogsm) >= 1.8.0
 BuildRequires:  pkgconfig(talloc)
 
 %description
@@ -22,12 +22,12 @@ Install Osmocom PFCP and generic TLV protocol libraries.
 libosmo-gtlv and libosmo-pfcp
 
 
-%package -n libosmo-gtlv0
+%package -n libosmo-gtlv1
 Summary:        Generic TLV and TLIV protocol support
 License:        GPL-2.0-or-later AND AGPL-3.0-or-later
 Group:          System/Libraries
 
-%description -n libosmo-gtlv0
+%description -n libosmo-gtlv1
 Decoding, encoding and logging of protocols using a Tag-Length-Value and/or
 Tag-Length-Instance-Value structure.
 
@@ -36,7 +36,7 @@ Tag-Length-Instance-Value structure.
 Summary:        Development files for libosmo-pfcp
 License:        GPL-2.0-or-later
 Group:          Development/Libraries/C and C++
-Requires:       libosmo-gtlv0 = %{version}
+Requires:       libosmo-gtlv1 = %{version}
 
 %description -n libosmo-gtlv-devel
 libosmo-pfcp implements decoding, encoding and endpoint implementation of the
@@ -84,13 +84,13 @@ find %{buildroot} -type f -name "*.la" -delete -print
 %check
 make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 
-%post   -n libosmo-gtlv0 -p /sbin/ldconfig
-%postun -n libosmo-gtlv0 -p /sbin/ldconfig
+%post   -n libosmo-gtlv1 -p /sbin/ldconfig
+%postun -n libosmo-gtlv1 -p /sbin/ldconfig
 %post   -n libosmo-pfcp0 -p /sbin/ldconfig
 %postun -n libosmo-pfcp0 -p /sbin/ldconfig
 
-%files -n libosmo-gtlv0
-%{_libdir}/libosmo-gtlv.so.0*
+%files -n libosmo-gtlv1
+%{_libdir}/libosmo-gtlv.so.1*
 
 %files -n libosmo-gtlv-devel
 %dir %{_includedir}/%{name}

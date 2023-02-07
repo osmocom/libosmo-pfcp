@@ -1,3 +1,40 @@
+libosmo-pfcp (0.2.0) unstable; urgency=medium
+
+  [ Neels Hofmeyr ]
+  * pfcp_msg: check use count correctness
+  * gtlv: check memory bounds 1/3: encoding TLV
+  * gtlv: check memory bounds 2/3: decoding TLV
+  * gtlv: check memory bounds 3/3: encoding to str
+  * gtlv: fix repeated IEIs to several struct members
+  * gtlv: test repeated IEIs to several struct members
+
+  [ Harald Welte ]
+  * Support building with -Werror=strict-prototypes / -Werror=old-style-definition
+  * Add -Werror=implicit-int -Werror=int-conversion -Werror=old-style-definition
+
+  [ Vadim Yanitskiy ]
+  * contrib/jenkins.sh: build with --enable-werror
+  * tests: use 'check_PROGRAMS' instead of 'noinst_PROGRAMS'
+
+  [ Neels Janosch Hofmeyr ]
+  * api doc: explain heartbeat handling in rx_msg_cb
+  * pfcp_test: init logging, for PFCP errors
+  * pfcp_test: add missing 'pdi_present = true'
+  * pfcp_test: fix order of dependencies
+  * PFCP: add Network Instance IE in PDI IE
+  * add osmo_pfcp_ip_addrs_to_str_*()
+  * osmo_pfcp_ip_addrs_set(): do not set port number
+  * add osmo_pfcp_ie_outer_header_creation_to_str_*()
+  * tweak comment in pfcp_ies_custom.c
+  * pfcp coding errmsgs: drop extra newlines
+  * fix coding of Network Instance IE
+  * fix coding of Node ID: FQDN type
+  * bitmask to string: shorten
+  * gtlv: decoding error: log size limited hexdump of IE
+  * silence compiler warning in gtlv_dec_enc.c
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Tue, 07 Feb 2023 13:58:41 +0100
+
 libosmo-pfcp (0.1.2) unstable; urgency=medium
 
   [ Neels Hofmeyr ]

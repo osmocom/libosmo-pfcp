@@ -10,7 +10,7 @@ Build-Depends: debhelper (>=10),
                automake,
                libtool,
                pkg-config,
-               libosmocore-dev (>= 1.7.0),
+               libosmocore-dev (>= 1.8.0),
                libtalloc-dev (>= 2.1.0)
 Standards-Version: 3.9.8
 Vcs-Git: https://gitea.osmocom.org/osmocom/libosmo-pfcp
@@ -22,12 +22,12 @@ Section: libs
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends},
-         libosmo-gtlv0 (= ${binary:Version}),
+         libosmo-gtlv1 (= ${binary:Version}),
          libosmo-pfcp0 (= ${binary:Version})
 Description: Osmocom PFCP protocol implementation (metapackage)
  Install Osmocom PFCP and generic TLV protocol libraries.
 
-Package: libosmo-gtlv0
+Package: libosmo-gtlv1
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -43,8 +43,8 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: ${misc:Depends},
-         libosmo-gtlv0 (= ${binary:Version}),
-         libosmocore-dev (>= 1.7.0),
+         libosmo-gtlv1 (= ${binary:Version}),
+         libosmocore-dev (>= 1.8.0),
          libtalloc-dev (>= 2.1.0)
 Description: Development files for libosmo-gtlv
  libosmo-gtlv implements decoding, encoding and logging of protocols using a
@@ -57,7 +57,7 @@ Multi-Arch: same
 Section: debug
 Priority: extra
 Depends: ${misc:Depends},
-         libosmo-gtlv0 (= ${binary:Version})
+         libosmo-gtlv1 (= ${binary:Version})
 Description: Debug symbols for libosmo-gtlv
  libosmo-gtlv implements decoding, encoding and logging of protocols using a
  Tag-Length-Value and/or Tag-Length-Instance-Value structure. This package in
@@ -69,7 +69,7 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         libosmo-gtlv0 (= ${binary:Version})
+         libosmo-gtlv1 (= ${binary:Version})
 Pre-Depends: ${misc:Pre-Depends}
 Description: PFCP protocol support
  Decoding, encoding and endpoint implementation of the Packet Forwarding Control Protocol
