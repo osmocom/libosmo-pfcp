@@ -326,7 +326,12 @@ static int osmo_pfcp_endpoint_retrans_queue_add(struct osmo_pfcp_endpoint *endpo
  * Store the message in the local message queue for possible retransmissions.
  * On success, return zero, and pass ownership of m to ep. ep deallocates m when all retransmissions are done / a reply
  * has been received.
- * On error, return nonzero, and immediately deallocate m. */
+ * On error, return nonzero, and immediately deallocate m.
+ *
+ * WARNING: Do not access the osmo_pfcp_msg m after calling this function! In most cases, m will still remain allocated,
+ * and accessing it will work, but especially when an error occurs, m will be deallocated immediately. Hence, you will
+ * see no problem during normal successful operation, but your program will crash with use-after-free on any error!
+ */
 int osmo_pfcp_endpoint_tx(struct osmo_pfcp_endpoint *ep, struct osmo_pfcp_msg *m)
 {
 	struct osmo_pfcp_ie_node_id *node_id;
