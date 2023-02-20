@@ -72,7 +72,7 @@ struct osmo_pfcp_header_common {
 	uint8_t message_type;
 	uint16_t message_length;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t version:3, spare:2, follow_on:1, message_priority_present:1, seid_present:1;
 	uint8_t message_type;
 	uint16_t message_length;
@@ -93,7 +93,7 @@ struct osmo_pfcp_header_seid {
 	uint8_t message_priority:4,
 		spare:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	struct osmo_pfcp_header_common c;
 	uint64_t session_endpoint_identifier;
 	uint8_t sequence_nr[3];
