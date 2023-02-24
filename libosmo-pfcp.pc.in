@@ -7,5 +7,6 @@ Name: Osmocom PFCP library
 Description: C Utility Library that implements the PFCP protocol and endpoint
 Version: @VERSION@
 Requires: libosmo-gtlv, libosmocore, talloc
+Requires.private: libosmogsm
 Libs: -L${libdir} -losmo-pfcp
 Cflags: -I${includedir}/
