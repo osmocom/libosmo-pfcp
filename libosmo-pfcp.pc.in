@@ -6,7 +6,6 @@ includedir=@includedir@
 Name: Osmocom PFCP library
 Description: C Utility Library that implements the PFCP protocol and endpoint
 Version: @VERSION@
-Requires: libosmo-gtlv, libosmocore, talloc
-Requires.private: libosmogsm
+Requires: libosmo-gtlv, libosmogsm, libosmocore, talloc
 Libs: -L${libdir} -losmo-pfcp
 Cflags: -I${includedir}/
