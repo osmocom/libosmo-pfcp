@@ -11,11 +11,6 @@ AM_CFLAGS = \
 	$(LIBOSMOGSM_CFLAGS) \
 	$(NULL)
 
-AM_LDFLAGS = \
-	$(LIBOSMOCORE_LIBS) \
-	$(LIBOSMOGSM_LIBS) \
-	$(NULL)
-
 lib_LTLIBRARIES = \
 	libosmo-pfcp.la \
 	$(NULL)
@@ -28,6 +23,12 @@ libosmo_pfcp_la_SOURCES = \
 	pfcp_cp_peer.c \
 	\
 	pfcp_ies_auto.c \
+	$(NULL)
+
+libosmo_pfcp_la_LIBADD = \
+	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.la \
+	$(LIBOSMOCORE_LIBS) \
+	$(LIBOSMOGSM_LIBS) \
 	$(NULL)
 
 # This is _NOT_ the library release version, it's an API version.
