@@ -11,14 +11,12 @@ AM_CFLAGS = \
 	$(LIBOSMOCORE_CFLAGS) \
 	$(LIBOSMOGSM_CFLAGS) \
 	$(LIBOSMOVTY_CFLAGS) \
-	$(COVERAGE_CFLAGS) \
 	$(NULL)
 
 AM_LDFLAGS = \
 	$(LIBOSMOCORE_LIBS) \
 	$(LIBOSMOGSM_LIBS) \
 	$(LIBOSMOVTY_LIBS) \
-	$(COVERAGE_LDFLAGS) \
 	$(NULL)
 
 lib_LTLIBRARIES = \
@@ -68,5 +66,4 @@ gen__pfcp_ies_auto_SOURCES = \
 gen__pfcp_ies_auto_LDADD = \
 	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.la \
 	$(LIBOSMOCORE_LIBS) \
-	$(COVERAGE_LDFLAGS) \
 	$(NULL)
