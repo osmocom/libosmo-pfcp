@@ -10,10 +10,6 @@ AM_CFLAGS = \
 	$(LIBOSMOCORE_CFLAGS) \
 	$(NULL)
 
-AM_LDFLAGS = \
-	$(LIBOSMOCORE_LIBS) \
-	$(NULL)
-
 lib_LTLIBRARIES = \
 	libosmo-gtlv.la \
 	$(NULL)
