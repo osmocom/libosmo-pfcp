@@ -4,7 +4,6 @@ AUTOMAKE_OPTIONS = foreign dist-bzip2 1.6
 ## remove line below when OE toolchain is updated to version which include those
 ACLOCAL_AMFLAGS = -I m4
 AM_CPPFLAGS = \
-	$(all_includes) \
 	-I$(top_srcdir)/include \
 	$(NULL)
 
