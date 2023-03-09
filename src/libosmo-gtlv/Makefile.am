@@ -9,10 +9,6 @@ AM_CFLAGS = \
 	$(LIBOSMOCORE_CFLAGS) \
 	$(NULL)
 
-AM_LDFLAGS = \
-	$(LIBOSMOCORE_LIBS) \
-	$(NULL)
-
 lib_LTLIBRARIES = \
 	libosmo-gtlv.la \
 	$(NULL)
@@ -21,6 +17,10 @@ libosmo_gtlv_la_SOURCES = \
 	gtlv.c \
 	gtlv_dec_enc.c \
 	gtlv_gen.c \
+	$(NULL)
+
+libosmo_gtlv_la_LIBADD = \
+	$(LIBOSMOCORE_LIBS) \
 	$(NULL)
 
 # This is _NOT_ the library release version, it's an API version.
