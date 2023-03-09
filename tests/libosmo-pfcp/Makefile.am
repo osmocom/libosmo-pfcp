@@ -1,5 +1,4 @@
 AM_CPPFLAGS = \
-	$(all_includes) \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \
 	$(NULL)
