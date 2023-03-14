@@ -65,3 +65,7 @@ gen__pfcp_ies_auto_LDADD = \
 	$(top_builddir)/src/libosmo-gtlv/libosmo-gtlv.la \
 	$(LIBOSMOCORE_LIBS) \
 	$(NULL)
+
+gen__pfcp_ies_auto_LDFLAGS = \
+	-no-install \
+	$(NULL)
