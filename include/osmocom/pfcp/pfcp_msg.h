@@ -42,29 +42,14 @@ struct osmo_pfcp_msg;
 
 #define OSMO_PFCP_MSGB_ALLOC_SIZE 2048
 
-#define OSMO_LOG_PFCP_MSG_SRC(M, LEVEL, file, line, FMT, ARGS...) do { \
-		struct osmo_fsm_inst *_fi = (M) ? ((M)->ctx.session_fi ?: (M)->ctx.peer_fi) : NULL; \
-		enum osmo_pfcp_cause *cause = osmo_pfcp_msg_cause(M); \
-		if ((M)->h.seid_present) { \
-			LOGPFSMSLSRC(_fi, DLPFCP, LEVEL, file, line, \
-				     "%s%s PFCP seq-%u SEID-0x%"PRIx64" %s%s%s: " FMT, \
-				     _fi ? "" : osmo_sockaddr_to_str_c(OTC_SELECT, &(M)->remote_addr), \
-				     (M)->rx ? "-rx->" : "<-tx-", (M)->h.sequence_nr, \
-				     (M)->h.seid, \
-				     osmo_pfcp_message_type_str((M)->h.message_type), cause ? ": " : "", \
-				     cause ? osmo_pfcp_cause_str(*cause) : "", ##ARGS); \
-		} else { \
-			LOGPFSMSLSRC(_fi, DLPFCP, LEVEL, file, line, \
-				     "%s%s PFCP seq-%u %s%s%s: " FMT, \
-				     _fi ? "" : osmo_sockaddr_to_str_c(OTC_SELECT, &(M)->remote_addr), \
-				     (M)->rx ? "-rx->" : "<-tx-", (M)->h.sequence_nr, \
-				     osmo_pfcp_message_type_str((M)->h.message_type), cause ? ": " : "", \
-				     cause ? osmo_pfcp_cause_str(*cause) : "", ##ARGS); \
-		} \
-	} while (0)
+#define OSMO_LOG_PFCP_MSG_SRC(M, LEVEL, file, line, FMT, ARGS...) \
+	LOGPSRC(DLPFCP, LEVEL, file, line, "%s: " FMT, osmo_pfcp_msg_log_info_c(OTC_SELECT, M), ##ARGS)
 
 #define OSMO_LOG_PFCP_MSG(M, LEVEL, FMT, ARGS...) \
 	OSMO_LOG_PFCP_MSG_SRC(M, LEVEL, __FILE__, __LINE__, FMT, ##ARGS)
+
+int osmo_pfcp_msg_log_info_buf(char *buf, size_t buflen, const struct osmo_pfcp_msg *m);
+char *osmo_pfcp_msg_log_info_c(void *ctx, const struct osmo_pfcp_msg *m);
 
 struct osmo_pfcp_header_parsed {
 	uint8_t version;

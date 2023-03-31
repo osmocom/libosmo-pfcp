@@ -550,3 +550,32 @@ char *osmo_pfcp_msg_to_str_c(void *ctx, const struct osmo_pfcp_msg *m)
 {
 	OSMO_NAME_C_IMPL(ctx, 256, "ERROR", osmo_pfcp_msg_to_str_buf, m)
 }
+
+int osmo_pfcp_msg_log_info_buf(char *buf, size_t buflen, const struct osmo_pfcp_msg *m)
+{
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+	struct osmo_fsm_inst *fi = m ? (m->ctx.session_fi ?: m->ctx.peer_fi) : NULL;
+	enum osmo_pfcp_cause *cause = osmo_pfcp_msg_cause(m);
+
+	if (fi)
+		OSMO_STRBUF_PRINTF(sb, "%s{%s}: ",
+				   osmo_fsm_inst_name(fi),
+				   osmo_fsm_state_name(fi->fsm, fi->state));
+	else
+		OSMO_STRBUF_APPEND(sb, osmo_sockaddr_to_str_buf2, &m->remote_addr);
+	OSMO_STRBUF_PRINTF(sb, "%s PFCP seq-%u",
+			   m->rx ? "-rx->" : "<-tx-",
+			   m->h.sequence_nr);
+	if (m->h.seid_present)
+		OSMO_STRBUF_PRINTF(sb, " SEID-0x%"PRIx64, m->h.seid);
+
+	OSMO_STRBUF_PRINTF(sb, " %s", osmo_pfcp_message_type_str(m->h.message_type));
+	if (cause)
+		OSMO_STRBUF_PRINTF(sb, ": %s", osmo_pfcp_cause_str(*cause));
+	return sb.chars_needed;
+}
+
+char *osmo_pfcp_msg_log_info_c(void *ctx, const struct osmo_pfcp_msg *m)
+{
+	OSMO_NAME_C_IMPL(ctx, 128, "ERROR", osmo_pfcp_msg_log_info_buf, m)
+}
