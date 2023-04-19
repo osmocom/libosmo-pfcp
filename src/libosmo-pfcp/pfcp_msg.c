@@ -555,7 +555,7 @@ int osmo_pfcp_msg_log_info_buf(char *buf, size_t buflen, const struct osmo_pfcp_
 {
 	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
 	struct osmo_fsm_inst *fi = m ? (m->ctx.session_fi ?: m->ctx.peer_fi) : NULL;
-	enum osmo_pfcp_cause *cause = osmo_pfcp_msg_cause(m);
+	enum osmo_pfcp_cause *cause = m ? osmo_pfcp_msg_cause(m) : NULL;
 
 	if (fi)
 		OSMO_STRBUF_PRINTF(sb, "%s{%s}: ",
