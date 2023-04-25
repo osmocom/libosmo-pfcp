@@ -1,8 +1,8 @@
 Source: libosmo-pfcp
 Section: libs
 Priority: optional
-Maintainer: Osmocom team <osmocom-net-gprs@lists.osmocom.org>
-Build-Depends: debhelper (>=10),
+Maintainer: Osmocom team <openbsc@lists.osmocom.org>
+Build-Depends: debhelper (>= 10),
                dh-autoreconf,
                autotools-dev,
                autoconf,
