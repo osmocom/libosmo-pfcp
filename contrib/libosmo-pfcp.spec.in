@@ -2,7 +2,7 @@ Name:           libosmo-pfcp
 Version:        @VERSION@
 Release:        0
 Summary:        PFCP protocol encoding, decoding and endpoint implementation
-License:        AGPL-3.0-or-later AND GPL-2.0-or-later
+License:        GPL-2.0-or-later
 Group:          Hardware/Mobile
 URL:            https://osmocom.org/projects/libosmo-pfcp
 Source:         %{name}-%{version}.tar.xz
@@ -24,7 +24,7 @@ libosmo-gtlv and libosmo-pfcp
 
 %package -n libosmo-gtlv1
 Summary:        Generic TLV and TLIV protocol support
-License:        GPL-2.0-or-later AND AGPL-3.0-or-later
+License:        GPL-2.0-or-later
 Group:          System/Libraries
 
 %description -n libosmo-gtlv1
@@ -46,7 +46,7 @@ contains the files for compiling a program using this library.
 
 %package -n libosmo-pfcp0
 Summary:        PFCP protocol support
-License:        GPL-2.0-or-later AND AGPL-3.0-or-later
+License:        GPL-2.0-or-later
 Group:          System/Libraries
 
 %description -n libosmo-pfcp0
