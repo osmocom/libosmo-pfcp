@@ -62,9 +62,9 @@ struct osmo_gtlv_cfg {
 	size_t tl_min_size;
 
 	/*! Read one TL from the start of src_data.
-	 * \param gtlv  Return the T (tag) value read from src_data in gtlv->tag.
+	 * \param gtlv  Return the T (tag) value read from src_data in gtlv->ti.tag.
 	 *             Return the L (length) value read from src_data in gtlv->len.
-	 *             Return the I (instance) value read from src_data in gtlv->len; ignore if there is no I.
+	 *             Return the I (instance) value read from src_data in gtlv->ti.instance; ignore if there is no I.
 	 *             Return the position just after the TL in gtlv->*val. If there is V data, point at the start of the
 	 *             V data in src_data. If there is no V data, point at the byte just after the TL part in src_data.
 	 * \param src_data  Part of raw message being decoded.
