@@ -431,8 +431,10 @@ char *osmo_pfcp_bits_to_str_c(void *ctx, const uint8_t *bits, const struct value
 int osmo_pfcp_dec_up_function_features(void *decoded_struct, void *decode_to, const struct osmo_gtlv_load *tlv)
 {
 	struct osmo_pfcp_ie_up_function_features *up_function_features = decode_to;
-	ENSURE_LENGTH_IS_AT_LEAST(6);
-	memcpy(up_function_features->bits, tlv->val, 6);
+	/* 3GPP TS 29.244 version 16.6.0 Release 16 8.2.25 UP Function Features defines at least 6 octets of bits, but
+	 * if the peer sends less octets, make do with what we get. */
+	memset(up_function_features->bits, 0, sizeof(up_function_features->bits));
+	memcpy(up_function_features->bits, tlv->val, OSMO_MIN(sizeof(up_function_features->bits), tlv->len));
 	return 0;
 }
 
