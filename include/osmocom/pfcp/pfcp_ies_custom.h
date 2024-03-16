@@ -25,6 +25,7 @@
 #pragma once
 
 #include <osmocom/core/socket.h>
+#include <osmocom/core/sockaddr_str.h>
 
 #include <osmocom/pfcp/pfcp_proto.h>
 
@@ -39,6 +40,11 @@ struct osmo_pfcp_ip_addrs {
 int osmo_pfcp_ip_addrs_set(struct osmo_pfcp_ip_addrs *dst, const struct osmo_sockaddr *addr);
 int osmo_pfcp_ip_addrs_to_str_buf(char *buf, size_t buflen, const struct osmo_pfcp_ip_addrs *addrs);
 char *osmo_pfcp_ip_addrs_to_str_c(void *ctx, const struct osmo_pfcp_ip_addrs *addrs);
+
+int osmo_pfcp_ip_addrs_get(struct osmo_sockaddr *v4, struct osmo_sockaddr *v6,
+			   struct osmo_pfcp_ip_addrs *src);
+int osmo_pfcp_ip_addrs_get_str(struct osmo_sockaddr_str *v4, struct osmo_sockaddr_str *v6,
+			       struct osmo_pfcp_ip_addrs *src);
 
 /* 3GPP TS 29.244 8.2.38, IETF RFC 1035 3.1 */
 struct osmo_pfcp_ie_node_id {

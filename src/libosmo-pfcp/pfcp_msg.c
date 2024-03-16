@@ -514,6 +514,40 @@ int osmo_pfcp_ip_addrs_set(struct osmo_pfcp_ip_addrs *dst, const struct osmo_soc
 	}
 }
 
+int osmo_pfcp_ip_addrs_get(struct osmo_sockaddr *v4, struct osmo_sockaddr *v6, struct osmo_pfcp_ip_addrs *src)
+{
+	if (v4) {
+		if (src->v4_present)
+			*v4 = src->v4;
+		else
+			*v4 = (struct osmo_sockaddr){};
+	}
+	if (v6) {
+		if (src->v6_present)
+			*v6 = src->v6;
+		else
+			*v6 = (struct osmo_sockaddr){};
+	}
+	return 0;
+}
+
+int osmo_pfcp_ip_addrs_get_str(struct osmo_sockaddr_str *v4, struct osmo_sockaddr_str *v6, struct osmo_pfcp_ip_addrs *src)
+{
+	if (v4) {
+		if (src->v4_present)
+			return osmo_sockaddr_str_from_sockaddr(v4, &src->v4.u.sas);
+		else
+			*v4 = (struct osmo_sockaddr_str){};
+	}
+	if (v6) {
+		if (src->v6_present)
+			return osmo_sockaddr_str_from_sockaddr(v6, &src->v6.u.sas);
+		else
+			*v6 = (struct osmo_sockaddr_str){};
+	}
+	return 0;
+}
+
 /* If a osmo_fsm_inst placed in m->ctx deallocates before the osmo_pfcp_msg, call this function, to make sure to avoid
  * use after free. Alternatively use m->ctx.*_use_count to make sure the FSM inst does not deallocate before the
  * osmo_pfcp_msg is discarded from the resend queue. */
