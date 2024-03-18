@@ -273,6 +273,7 @@ struct osmo_pfcp_msg tests[] = {
 			.seid = 0x0123456789abcdef,
 		},
 		.ies.session_est_resp = {
+			.node_id_present = true,
 			.node_id = {
 				.type = OSMO_PFCP_NODE_ID_T_IPV4,
 				.ip.u.sin = {

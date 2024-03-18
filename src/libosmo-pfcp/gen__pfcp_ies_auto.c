@@ -293,7 +293,7 @@ static const struct osmo_gtlv_gen_ie_o ies_in_msg_session_est_req[] = {
 };
 
 static const struct osmo_gtlv_gen_ie_o ies_in_msg_session_est_resp[] = {
-	M(ALL_FROM_NAME, "node_id"),
+	O(ALL_FROM_NAME, "node_id"),
 	Ms(cause),
 	Os(offending_ie),
 	O(f_seid, "up_f_seid"),
