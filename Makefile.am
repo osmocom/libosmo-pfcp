@@ -24,7 +24,6 @@ pkgconfig_DATA = \
 BUILT_SOURCES = $(top_srcdir)/.version
 EXTRA_DIST = \
 	     .version \
-	     contrib/libosmo-pfcp.spec.in \
 	     debian \
 	     git-version-gen \
 	     $(NULL)
