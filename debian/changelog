@@ -1,3 +1,18 @@
+libosmo-pfcp (0.4.0) unstable; urgency=medium
+
+  [ Harald Welte ]
+  * add missing GPLv2 license text as COPYING file
+
+  [ Neels Janosch Hofmeyr ]
+  * osmo_gtlv_cfg: fix api doc
+  * pfcp up_function_features: allow shorter lengths
+  * add osmo_pfcp_ip_addrs_get
+
+  [ Oliver Smith ]
+  * contrib: remove rpm spec file
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 24 Jul 2024 12:04:14 +0200
+
 libosmo-pfcp (0.3.0) unstable; urgency=medium
 
   [ Neels Janosch Hofmeyr ]
