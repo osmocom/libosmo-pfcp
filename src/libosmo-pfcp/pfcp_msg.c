@@ -586,8 +586,16 @@ char *osmo_pfcp_msg_to_str_c(void *ctx, const struct osmo_pfcp_msg *m)
 int osmo_pfcp_msg_log_info_buf(char *buf, size_t buflen, const struct osmo_pfcp_msg *m)
 {
 	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
-	struct osmo_fsm_inst *fi = m ? (m->ctx.session_fi ?: m->ctx.peer_fi) : NULL;
-	enum osmo_pfcp_cause *cause = m ? osmo_pfcp_msg_cause(m) : NULL;
+	struct osmo_fsm_inst *fi;
+	enum osmo_pfcp_cause *cause;
+
+	if (!m) {
+		OSMO_STRBUF_PRINTF(sb, "NULL");
+		return sb.chars_needed;
+	}
+
+	fi = (m->ctx.session_fi ?: m->ctx.peer_fi);
+	cause = osmo_pfcp_msg_cause(m);
 
 	if (fi)
 		OSMO_STRBUF_PRINTF(sb, "%s{%s}: ",
