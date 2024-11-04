@@ -139,6 +139,12 @@ int osmo_pfcp_cp_peer_associate(struct osmo_pfcp_cp_peer *cp_peer)
 	return 0;
 }
 
+int osmo_pfcp_cp_peer_set_associated_cb(struct osmo_pfcp_cp_peer *cp_peer, osmo_pfcp_cp_peer_assoc_cb assoc_cb)
+{
+	cp_peer->assoc_cb = assoc_cb;
+	return 0;
+}
+
 static int pfcp_cp_peer_fsm_timer_cb(struct osmo_fsm_inst *fi)
 {
 	switch (fi->state) {
