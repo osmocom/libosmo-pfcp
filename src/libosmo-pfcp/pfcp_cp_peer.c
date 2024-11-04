@@ -145,6 +145,25 @@ int osmo_pfcp_cp_peer_set_associated_cb(struct osmo_pfcp_cp_peer *cp_peer, osmo_
 	return 0;
 }
 
+uint64_t osmo_pfcp_cp_peer_next_seid(struct osmo_pfcp_cp_peer *cp_peer)
+{
+	return osmo_pfcp_next_seid(&cp_peer->next_seid_state);
+}
+
+const struct osmo_sockaddr *osmo_pfcp_cp_peer_get_remote_addr(const struct osmo_pfcp_cp_peer *cp_peer)
+{
+	return &cp_peer->remote_addr;
+}
+
+void *osmo_pfcp_cp_peer_get_priv(struct osmo_pfcp_cp_peer *cp_peer)
+{
+	return cp_peer->priv;
+}
+void osmo_pfcp_cp_peer_set_priv(struct osmo_pfcp_cp_peer *cp_peer, void *priv)
+{
+	cp_peer->priv = priv;
+}
+
 static int pfcp_cp_peer_fsm_timer_cb(struct osmo_fsm_inst *fi)
 {
 	switch (fi->state) {
