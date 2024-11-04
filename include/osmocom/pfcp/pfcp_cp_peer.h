@@ -36,23 +36,6 @@ struct osmo_pfcp_cp_peer;
 
 typedef void (*osmo_pfcp_cp_peer_assoc_cb)(struct osmo_pfcp_cp_peer *cp_peer, bool associated);
 
-struct osmo_pfcp_cp_peer {
-	struct osmo_fsm_inst *fi;
-	struct osmo_pfcp_endpoint *ep;
-	struct osmo_sockaddr remote_addr;
-	uint64_t next_seid_state;
-
-	/* If non-NULL, called whenever the peer completes a PFCP Association, and when it loses association.
-	 * Argument associated == true means the peer has just associated;
-	 * associated == false means the association has been lost. */
-	osmo_pfcp_cp_peer_assoc_cb assoc_cb;
-	/* Application private data for assoc_cb, in case ep->priv does not suffice. */
-	void *priv;
-
-	struct osmo_use_count use_count;
-	struct osmo_use_count_entry use_count_buf[128];
-};
-
 struct osmo_pfcp_cp_peer *osmo_pfcp_cp_peer_alloc(void *ctx,
 						  struct osmo_pfcp_endpoint *ep,
 						  const struct osmo_sockaddr *remote_addr);

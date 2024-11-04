@@ -1,3 +1,7 @@
+noinst_HEADERS = \
+	pfcp_cp_peer_private.h \
+	$(NULL)
+
 pfcp_HEADERS = \
 	pfcp_endpoint.h \
 	pfcp_ies_custom.h \
