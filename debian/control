@@ -81,7 +81,9 @@ Multi-Arch: same
 Section: libdevel
 Depends: ${misc:Depends},
          libosmo-pfcp0 (= ${binary:Version}),
-         libosmo-gtlv-dev (= ${binary:Version})
+         libosmo-gtlv-dev (= ${binary:Version}),
+         libosmocore-dev,
+         libtalloc-dev,
 Description: Development files for libosmo-pfcp
  libosmo-pfcp implements decoding, encoding and endpoint implementation of the
  Packet Forwarding Control Protocol (3GPP TS 29.244). This package in particular
