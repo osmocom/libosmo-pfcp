@@ -28,6 +28,8 @@
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/tdef.h>
+#include <osmocom/core/linuxlist.h>
+#include <osmocom/core/hashtable.h>
 
 #include <osmocom/pfcp/pfcp_endpoint.h>
 #include <osmocom/pfcp/pfcp_msg.h>
@@ -49,16 +51,20 @@ struct osmo_pfcp_endpoint {
 	 * For a transmitted Request message, wait for a matching Response from a remote peer; if none arrives,
 	 * retransmit (see n1 and t1_ms). */
 	struct llist_head sent_requests;
+	DECLARE_HASHTABLE(sent_requests_by_seq_nr, 10);
 	/* All transmitted PFCP Response messages, list of osmo_pfcp_queue_entry.
 	 * For a transmitted Response message, keep it in the queue for a fixed amount of time. If the peer retransmits
 	 * the original Request, do not dispatch the Request, but respond with the queued message directly. */
 	struct llist_head sent_responses;
+	DECLARE_HASHTABLE(sent_responses_by_seq_nr, 10);
 };
 
 /*! Entry of pfcp_endpoint message queue of PFCP messages, for re-transsions. */
 struct osmo_pfcp_queue_entry {
 	/* entry in osmo_pfcp_endpoint.sent_requests or .sent_responses */
 	struct llist_head entry;
+	 /* item in osmo_pfcp_endpoint's sent_responses_by_seq_nr or sent_responses_by_seq_nr */
+	struct hlist_node node_by_seq_nr;
 	/* back-pointer */
 	struct osmo_pfcp_endpoint *ep;
 	/* message we have transmitted */
@@ -70,22 +76,6 @@ struct osmo_pfcp_queue_entry {
 	unsigned int n1_remaining;
 };
 
-/* Find a matching osmo_pfcp_queue_entry for given rx.
- * A returned osmo_pfcp_queue_entry is guaranteed to be a Response if rx is a Request, and vice versa. */
-static struct osmo_pfcp_queue_entry *osmo_pfcp_queue_find(struct llist_head *queue, const struct osmo_pfcp_msg *rx)
-{
-	struct osmo_pfcp_queue_entry *qe;
-	/* It's important to match only a Request to a Response and vice versa, because the remote peer makes its own
-	 * sequence_nr. There could be a collision of sequence_nr. But as long as all Requests look for a Response and
-	 * vice versa, the sequence_nr scopes don't overlap. */
-	llist_for_each_entry(qe, queue, entry) {
-		if (qe->m->is_response != rx->is_response
-		    && qe->m->h.sequence_nr == rx->h.sequence_nr)
-			return qe;
-	}
-	return NULL;
-}
-
 /* clean up and deallocate the given osmo_pfcp_queue_entry */
 static void osmo_pfcp_queue_del(struct osmo_pfcp_queue_entry *qe)
 {
@@ -96,6 +86,7 @@ static void osmo_pfcp_queue_del(struct osmo_pfcp_queue_entry *qe)
 static int osmo_pfcp_queue_destructor(struct osmo_pfcp_queue_entry *qe)
 {
 	osmo_timer_del(&qe->t1);
+	hash_del(&qe->node_by_seq_nr);
 	llist_del(&qe->entry);
 	return 0;
 }
@@ -144,6 +135,8 @@ struct osmo_pfcp_endpoint *osmo_pfcp_endpoint_create(void *ctx, const struct osm
 
 	INIT_LLIST_HEAD(&ep->sent_requests);
 	INIT_LLIST_HEAD(&ep->sent_responses);
+	hash_init(ep->sent_requests_by_seq_nr);
+	hash_init(ep->sent_responses_by_seq_nr);
 
 	ep->pfcp_fd.fd = -1;
 
@@ -311,9 +304,11 @@ static int osmo_pfcp_endpoint_retrans_queue_add(struct osmo_pfcp_endpoint *endpo
 	 * Add sent responses to the end of the list: they will rarely be retransmitted at all. */
 	if (m->is_response) {
 		llist_add_tail(&qe->entry, &endpoint->sent_responses);
+		hash_add(endpoint->sent_responses_by_seq_nr, &qe->node_by_seq_nr, m->h.sequence_nr);
 		osmo_timer_setup(&qe->t1, pfcp_queue_sent_resp_timer_cb, qe);
 	} else {
 		llist_add(&qe->entry, &endpoint->sent_requests);
+		hash_add(endpoint->sent_requests_by_seq_nr, &qe->node_by_seq_nr, m->h.sequence_nr);
 		osmo_timer_setup(&qe->t1, pfcp_queue_sent_req_timer_cb, qe);
 	}
 	talloc_set_destructor(qe, osmo_pfcp_queue_destructor);
@@ -353,6 +348,30 @@ int osmo_pfcp_endpoint_tx(struct osmo_pfcp_endpoint *ep, struct osmo_pfcp_msg *m
 	return 0;
 }
 
+static struct osmo_pfcp_queue_entry *osmo_pfcp_enfpoint_find_sent_request(const struct osmo_pfcp_endpoint *ep, uint32_t seq_nr)
+{
+	struct osmo_pfcp_queue_entry *qe;
+	hash_for_each_possible(ep->sent_requests_by_seq_nr, qe, node_by_seq_nr, seq_nr) {
+		OSMO_ASSERT(qe->m);
+		if (qe->m->h.sequence_nr != seq_nr)
+			continue;
+		return qe;
+	}
+	return NULL;
+}
+
+static struct osmo_pfcp_queue_entry *osmo_pfcp_enfpoint_find_sent_response(const struct osmo_pfcp_endpoint *ep, uint32_t seq_nr)
+{
+	struct osmo_pfcp_queue_entry *qe;
+	hash_for_each_possible(ep->sent_responses_by_seq_nr, qe, node_by_seq_nr, seq_nr) {
+		OSMO_ASSERT(qe->m);
+		if (qe->m->h.sequence_nr != seq_nr)
+			continue;
+		return qe;
+	}
+	return NULL;
+}
+
 static void osmo_pfcp_endpoint_handle_rx(struct osmo_pfcp_endpoint *ep, struct osmo_pfcp_msg *m)
 {
 	bool dispatch_rx = true;
@@ -370,7 +389,10 @@ static void osmo_pfcp_endpoint_handle_rx(struct osmo_pfcp_endpoint *ep, struct o
 	/* If this is receiving a response, search for matching sent request that is now completed.
 	 * If this is receiving a request, search for a matching sent response that can be retransmitted.
 	 * A match is found by sequence_nr. */
-	prev_msg = osmo_pfcp_queue_find(m->is_response ? &ep->sent_requests : &ep->sent_responses, m);
+	if (m->is_response)
+		prev_msg = osmo_pfcp_enfpoint_find_sent_request(ep, m->h.sequence_nr);
+	else
+		prev_msg = osmo_pfcp_enfpoint_find_sent_response(ep, m->h.sequence_nr);
 
 	if (prev_msg && !m->is_response) {
 		/* m is a request, and we have already sent a response to this same request earlier. Retransmit the same
