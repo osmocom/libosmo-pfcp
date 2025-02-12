@@ -7,7 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-libosmo-pfcp  add API osmo_pfcp_cp_peer_set_associated_cb()
-libosmo-pfcp  add API osmo_pfcp_cp_peer_get_remote_addr(), osmo_pfcp_cp_peer_next_seid()
-                      osmo_pfcp_cp_peer_get_priv(), osmo_pfcp_cp_peer_set_priv()
-libosmo-pfcp  API break  struct osmo_pfcp_cp_peer fields become private

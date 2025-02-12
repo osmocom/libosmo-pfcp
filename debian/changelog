@@ -1,3 +1,20 @@
+libosmo-pfcp (0.5.0) unstable; urgency=medium
+
+  [ Neels Janosch Hofmeyr ]
+  * coverity CID#313611
+
+  [ Pau Espin Pedrol ]
+  * pfcp: add API osmo_pfcp_cp_peer_set_associated_cb()
+  * pfcp: Add APIs to access struct osmo_pfcp_cp_peer
+  * pfcp: Make struct osmo_pfcp_cp_peer private
+  * Use hashtable to look up req/resp by seq_nr
+  * Port pfcp socket to osmo_iofd
+
+  [ Oliver Smith ]
+  * debian/control: add missing deps to -dev pkg
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 12 Feb 2025 11:25:33 +0100
+
 libosmo-pfcp (0.4.0) unstable; urgency=medium
 
   [ Harald Welte ]

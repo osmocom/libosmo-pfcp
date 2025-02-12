@@ -56,7 +56,7 @@ override_dh_auto_configure:
 # See https://www.debian.org/doc/manuals/developers-reference/best-pkging-practices.html#bpp-dbg
 override_dh_strip:
 	dh_strip -plibosmo-gtlv1 --dbg-package=libosmo-gtlv-dbg
-	dh_strip -plibosmo-pfcp0 --dbg-package=libosmo-pfcp-dbg
+	dh_strip -plibosmo-pfcp4 --dbg-package=libosmo-pfcp-dbg
 
 # Print test results in case of a failure
 override_dh_auto_test:
