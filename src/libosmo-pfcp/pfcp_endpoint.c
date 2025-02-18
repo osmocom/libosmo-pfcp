@@ -52,12 +52,12 @@ struct osmo_pfcp_endpoint {
 	 * For a transmitted Request message, wait for a matching Response from a remote peer; if none arrives,
 	 * retransmit (see n1 and t1_ms). */
 	struct llist_head sent_requests;
-	DECLARE_HASHTABLE(sent_requests_by_seq_nr, 10);
+	DECLARE_HASHTABLE(sent_requests_by_seq_nr, 12);
 	/* All transmitted PFCP Response messages, list of osmo_pfcp_queue_entry.
 	 * For a transmitted Response message, keep it in the queue for a fixed amount of time. If the peer retransmits
 	 * the original Request, do not dispatch the Request, but respond with the queued message directly. */
 	struct llist_head sent_responses;
-	DECLARE_HASHTABLE(sent_responses_by_seq_nr, 10);
+	DECLARE_HASHTABLE(sent_responses_by_seq_nr, 12);
 };
 
 /*! Entry of pfcp_endpoint message queue of PFCP messages, for re-transsions. */
