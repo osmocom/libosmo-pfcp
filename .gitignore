@@ -83,3 +83,4 @@ doc/manuals/common
 doc/manuals/build
 
 contrib/libosmo-pfcp.spec
+include/osmocom/pfcp/version.h
