@@ -168,7 +168,7 @@ uint64_t osmo_pfcp_next_seid(uint64_t *next_seid_state);
 
 int osmo_pfcp_ie_node_id_from_osmo_sockaddr(struct osmo_pfcp_ie_node_id *node_id, const struct osmo_sockaddr *os);
 int osmo_pfcp_ie_node_id_to_osmo_sockaddr(const struct osmo_pfcp_ie_node_id *node_id, struct osmo_sockaddr *os);
-
+int osmo_pfcp_ie_node_id_cmp(const struct osmo_pfcp_ie_node_id *a, const struct osmo_pfcp_ie_node_id *b);
 #define OSMO_PFCP_MSG_MEMB(M, OFS) ((OFS) <= 0 ? NULL : (void *)((uint8_t *)(M) + OFS))
 
 static inline enum osmo_pfcp_cause *osmo_pfcp_msg_cause(const struct osmo_pfcp_msg *m)
