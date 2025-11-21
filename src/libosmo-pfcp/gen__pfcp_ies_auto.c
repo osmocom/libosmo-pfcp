@@ -321,7 +321,9 @@ static const struct osmo_gtlv_gen_ie_o ies_in_msg_session_mod_resp[] = {
 };
 
 static const struct osmo_gtlv_gen_ie_o ies_in_msg_session_del_req[] = {
-	/* no IEs */
+	O(ALL_FROM_NAME, "tl_container"),
+	O(ALL_FROM_NAME, "node_id"),
+	O(f_seid, "cp_f_seid"),
 	{}
 };
 
