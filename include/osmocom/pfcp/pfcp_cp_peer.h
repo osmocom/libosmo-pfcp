@@ -39,6 +39,7 @@ typedef void (*osmo_pfcp_cp_peer_assoc_cb)(struct osmo_pfcp_cp_peer *cp_peer, bo
 struct osmo_pfcp_cp_peer *osmo_pfcp_cp_peer_alloc(void *ctx,
 						  struct osmo_pfcp_endpoint *ep,
 						  const struct osmo_sockaddr *remote_addr);
+void osmo_pfcp_cp_peer_free(struct osmo_pfcp_cp_peer *cp_peer);
 int osmo_pfcp_cp_peer_associate(struct osmo_pfcp_cp_peer *cp_peer);
 bool osmo_pfcp_cp_peer_is_associated(const struct osmo_pfcp_cp_peer *cp_peer);
 int osmo_pfcp_cp_peer_set_associated_cb(struct osmo_pfcp_cp_peer *cp_peer, osmo_pfcp_cp_peer_assoc_cb assoc_cb);

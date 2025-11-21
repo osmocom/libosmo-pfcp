@@ -120,6 +120,13 @@ struct osmo_pfcp_cp_peer *osmo_pfcp_cp_peer_alloc(void *ctx,
 	return cp_peer;
 }
 
+void osmo_pfcp_cp_peer_free(struct osmo_pfcp_cp_peer *cp_peer)
+{
+	if (!cp_peer)
+		return;
+	osmo_fsm_inst_term(cp_peer->fi, OSMO_FSM_TERM_REGULAR, NULL);
+}
+
 int osmo_pfcp_cp_peer_associate(struct osmo_pfcp_cp_peer *cp_peer)
 {
 	struct osmo_fsm_inst *fi = cp_peer->fi;
