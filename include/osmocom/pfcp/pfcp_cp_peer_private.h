@@ -46,6 +46,9 @@ struct osmo_pfcp_cp_peer {
 	/* Application private data for assoc_cb, in case ep->priv does not suffice. */
 	void *priv;
 
+	struct osmo_timer_list heartbeat_tx_timer;
+	struct osmo_timer_list heartbeat_rx_timer;
+
 	struct osmo_use_count use_count;
 	struct osmo_use_count_entry use_count_buf[128];
 };

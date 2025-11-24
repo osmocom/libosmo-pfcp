@@ -1,4 +1,5 @@
 noinst_HEADERS = \
+	pfcp_endpoint_private.h \
 	pfcp_cp_peer_private.h \
 	$(NULL)
 
