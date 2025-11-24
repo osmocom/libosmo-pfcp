@@ -34,6 +34,7 @@
 
 #include <osmocom/pfcp/pfcp_endpoint.h>
 #include <osmocom/pfcp/pfcp_endpoint_private.h>
+#include <osmocom/pfcp/pfcp_cp_peer_private.h>
 #include <osmocom/pfcp/pfcp_msg.h>
 
 
@@ -111,6 +112,7 @@ struct osmo_pfcp_endpoint *osmo_pfcp_endpoint_create(void *ctx, const struct osm
 	if (!ep->cfg.tdefs)
 		ep->cfg.tdefs = osmo_pfcp_tdefs;
 
+	INIT_LLIST_HEAD(&ep->cp_peer_list);
 	INIT_LLIST_HEAD(&ep->sent_requests);
 	INIT_LLIST_HEAD(&ep->sent_responses);
 	hash_init(ep->sent_requests_by_seq_nr);
@@ -128,14 +130,18 @@ struct osmo_pfcp_endpoint *osmo_pfcp_endpoint_create(void *ctx, const struct osm
 	return ep;
 }
 
-static unsigned int ep_n1(struct osmo_pfcp_endpoint *ep)
+static unsigned int ep_n1(struct osmo_pfcp_endpoint *ep, const struct osmo_pfcp_msg *m)
 {
+	if (m->h.message_type == OSMO_PFCP_MSGT_HEARTBEAT_REQ)
+		return 0;
 	return osmo_tdef_get(ep->cfg.tdefs, OSMO_PFCP_TIMER_N1, OSMO_TDEF_CUSTOM, -1);
 }
 
-static unsigned int ep_t1(struct osmo_pfcp_endpoint *ep)
+static unsigned int ep_t1(struct osmo_pfcp_endpoint *ep, const struct osmo_pfcp_msg *m)
 {
-	return osmo_tdef_get(ep->cfg.tdefs, OSMO_PFCP_TIMER_T1, OSMO_TDEF_MS, -1);
+	int T = m->h.message_type == OSMO_PFCP_MSGT_HEARTBEAT_REQ ? OSMO_PFCP_TIMER_HEARTBEAT_RESP :
+								    OSMO_PFCP_TIMER_T1;
+	return osmo_tdef_get(ep->cfg.tdefs, T, OSMO_TDEF_MS, -1);
 }
 
 static unsigned int ep_keep_resp(struct osmo_pfcp_endpoint *ep)
@@ -149,8 +155,8 @@ static int osmo_pfcp_endpoint_tx_data_no_logging(struct osmo_pfcp_endpoint *ep, 
 static bool pfcp_queue_retrans(struct osmo_pfcp_queue_entry *qe)
 {
 	struct osmo_pfcp_endpoint *endpoint = qe->ep;
-	unsigned int t1_ms = ep_t1(endpoint);
 	struct osmo_pfcp_msg *m = qe->m;
+	unsigned int t1_ms = ep_t1(endpoint, m);
 	int rc;
 
 	/* if no more attempts remaining, drop from queue */
@@ -248,15 +254,15 @@ int osmo_pfcp_endpoint_tx_heartbeat_req(struct osmo_pfcp_endpoint *ep, const str
 static int osmo_pfcp_endpoint_retrans_queue_add(struct osmo_pfcp_endpoint *endpoint, struct osmo_pfcp_msg *m)
 {
 	struct osmo_pfcp_queue_entry *qe;
-	unsigned int n1 = ep_n1(endpoint);
-	unsigned int t1_ms = ep_t1(endpoint);
+	unsigned int n1 = ep_n1(endpoint, m);
+	unsigned int t1_ms = ep_t1(endpoint, m);
 	unsigned int keep_resp_ms = ep_keep_resp(endpoint);
 	unsigned int timeout = m->is_response ? keep_resp_ms : t1_ms;
 
 	LOGP(DLPFCP, LOGL_DEBUG, "retransmit unanswered Requests %u x %ums; keep sent Responses for %ums\n",
 	     n1, t1_ms, keep_resp_ms);
-	/* If there are no retransmissions or no timeout, it makes no sense to add to the queue. */
-	if (!n1 || !t1_ms) {
+	/* If there are no retransmissions and no timeout, it makes no sense to add to the queue. */
+	if (!n1 && !t1_ms) {
 		if (!m->is_response && m->ctx.resp_cb)
 			m->ctx.resp_cb(m, NULL, "PFCP timeout is zero, cannot wait for a response");
 		return 0;
@@ -508,10 +514,14 @@ int osmo_pfcp_endpoint_bind(struct osmo_pfcp_endpoint *ep)
 void osmo_pfcp_endpoint_close(struct osmo_pfcp_endpoint *ep)
 {
 	struct osmo_pfcp_queue_entry *qe;
+	struct osmo_pfcp_cp_peer *cp_peer;
 	while ((qe = llist_first_entry_or_null(&ep->sent_requests, struct osmo_pfcp_queue_entry, entry)))
 		osmo_pfcp_queue_del(qe);
 	while ((qe = llist_first_entry_or_null(&ep->sent_responses, struct osmo_pfcp_queue_entry, entry)))
 		osmo_pfcp_queue_del(qe);
+
+	while ((cp_peer = llist_first_entry_or_null(&ep->cp_peer_list, struct osmo_pfcp_cp_peer, entry)))
+		osmo_pfcp_cp_peer_free(cp_peer);
 
 	osmo_iofd_free(ep->iofd);
 	ep->iofd = NULL;

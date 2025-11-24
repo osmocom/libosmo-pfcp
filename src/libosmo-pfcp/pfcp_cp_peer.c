@@ -97,25 +97,22 @@ static int on_pfcp_heartbeat_resp(struct osmo_pfcp_msg *req, struct osmo_pfcp_ms
 {
 	struct osmo_fsm_inst *fi = req->ctx.peer_fi;
 	struct osmo_pfcp_cp_peer *cp_peer = fi->priv;
-	/*enum osmo_pfcp_cause *cause;
 
 	if (!rx_resp) {
-		LOG_CP_PEER(cp_peer, LOGL_ERROR, "Error: PFCP Association Setup Response: %s\n",
+		LOG_CP_PEER(cp_peer, LOGL_NOTICE, "Error: PFCP Heartbeat Response: %s\n",
 		    errmsg ? : "no response received");
-		goto assoc_failed;
-	}*/
+		return 0;
+	}
 
 	LOG_CP_PEER(cp_peer, LOGL_INFO, "Rx PFCP Heartbeat Response\n");
+
+	if (fi->state != PFCP_CP_PEER_ST_ASSOCIATED)
+		return 0;
 
 	unsigned int tval_rx_heartbeat_s =
 		osmo_tdef_get(cp_peer->ep->cfg.tdefs, OSMO_PFCP_TIMER_HEARTBEAT_RESP, OSMO_TDEF_S, -1);
 	osmo_timer_schedule(&cp_peer->heartbeat_rx_timer, tval_rx_heartbeat_s, 0);
 
-	/*cause = osmo_pfcp_msg_cause(rx_resp);
-	if (!cause) {
-		LOG_CP_PEER(cp_peer, LOGL_ERROR, "Invalid PFCP Association Setup Response: no Cause value\n");
-		goto assoc_failed;
-	}*/
 	return 0;
 }
 
@@ -131,8 +128,7 @@ static void pfcp_cp_peer_tx_heartbeat_req(struct osmo_pfcp_cp_peer *cp_peer)
 	LOG_CP_PEER(cp_peer, LOGL_INFO, "Tx PFCP Heartbeat Request\n");
 
 	if (osmo_pfcp_endpoint_tx(cp_peer->ep, m))
-		LOG_CP_PEER(cp_peer, LOGL_ERROR, "Failed to transmit PFCP Heartbeat Request to peer at\n");
-
+		LOG_CP_PEER(cp_peer, LOGL_ERROR, "Failed to transmit PFCP Heartbeat Request to peer\n");
 }
 
 static void pfcp_cp_peer_heartbeat_tx_timer_cb(void *data)
@@ -182,6 +178,8 @@ struct osmo_pfcp_cp_peer *osmo_pfcp_cp_peer_alloc(void *ctx,
 
 	osmo_timer_setup(&cp_peer->heartbeat_tx_timer, pfcp_cp_peer_heartbeat_tx_timer_cb, cp_peer);
 	osmo_timer_setup(&cp_peer->heartbeat_rx_timer, pfcp_cp_peer_heartbeat_rx_timer_cb, cp_peer);
+
+	llist_add_tail(&cp_peer->entry, &ep->cp_peer_list);
 	return cp_peer;
 }
 
@@ -191,6 +189,7 @@ static void pfcp_cp_peer_fsm_cleanup(struct osmo_fsm_inst *fi, enum osmo_fsm_ter
 	struct osmo_pfcp_cp_peer *cp_peer = fi->priv;
 	osmo_timer_del(&cp_peer->heartbeat_tx_timer);
 	osmo_timer_del(&cp_peer->heartbeat_rx_timer);
+	llist_del(&cp_peer->entry);
 }
 
 void osmo_pfcp_cp_peer_free(struct osmo_pfcp_cp_peer *cp_peer)
@@ -357,7 +356,7 @@ static void pfcp_cp_peer_associated_action(struct osmo_fsm_inst *fi, uint32_t ev
 		break;
 
 	case PFCP_CP_PEER_EV_HEARTBEAT_TIMEOUT:
-		LOG_CP_PEER(cp_peer, LOGL_NOTICE, "Hearbeat timeout!\n");
+		LOG_CP_PEER(cp_peer, LOGL_NOTICE, "Heartbeat timeout!\n");
 		osmo_pfcp_cp_peer_fsm_state_chg(PFCP_CP_PEER_ST_WAIT_ASSOC_SETUP_RESP);
 		break;
 
