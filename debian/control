@@ -10,7 +10,7 @@ Build-Depends: debhelper (>= 10),
                automake,
                libtool,
                pkg-config,
-               libosmocore-dev (>= 1.11.0),
+               libosmocore-dev (>= 1.12.0),
                libtalloc-dev (>= 2.1.0)
 Standards-Version: 3.9.8
 Vcs-Git: https://gitea.osmocom.org/osmocom/libosmo-pfcp
@@ -44,7 +44,7 @@ Multi-Arch: same
 Section: libdevel
 Depends: ${misc:Depends},
          libosmo-gtlv1 (= ${binary:Version}),
-         libosmocore-dev (>= 1.11.0),
+         libosmocore-dev (>= 1.12.0),
          libtalloc-dev (>= 2.1.0)
 Description: Development files for libosmo-gtlv
  libosmo-gtlv implements decoding, encoding and logging of protocols using a

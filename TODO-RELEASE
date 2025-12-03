@@ -7,5 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-libosmo-pfcp  add   osmo_pfcp_ie_node_id_cmp()
-libosmo-pfcp  add   osmo_pfcp_cp_peer_free()

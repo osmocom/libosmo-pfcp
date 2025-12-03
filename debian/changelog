@@ -1,3 +1,15 @@
+libosmo-pfcp (0.6.0) unstable; urgency=medium
+
+  [ Pau Espin Pedrol ]
+  * pfcp_endpoint: Increase sent_{requests,responses}_by_seq_nr hashtable size
+  * pfcp_msg: Add osmo_pfcp_ie_node_id_cmp()
+  * Introduce API osmo_pfcp_cp_peer_free()
+
+  [ Oliver Smith ]
+  * Generate a version.h file
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Wed, 03 Dec 2025 18:14:57 +0100
+
 libosmo-pfcp (0.5.0) unstable; urgency=medium
 
   [ Neels Janosch Hofmeyr ]
