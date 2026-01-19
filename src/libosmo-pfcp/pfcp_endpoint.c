@@ -161,8 +161,13 @@ static unsigned int ep_t1(struct osmo_pfcp_endpoint *ep)
 	return osmo_tdef_get(ep->cfg.tdefs, OSMO_PFCP_TIMER_T1, OSMO_TDEF_MS, -1);
 }
 
-static unsigned int ep_keep_resp(struct osmo_pfcp_endpoint *ep)
+static unsigned int ep_keep_resp(const struct osmo_pfcp_endpoint *ep, const struct osmo_pfcp_msg *m)
 {
+	/* Don't check for PFCP Assoc Setup Req duplicates: There's no way to
+	 * differentiate a duplicate from a new instance of a CP peer which chooses
+	 * (willingly or randomly) after restart the same Sequence Number as in previous run. */
+	if (m->h.message_type == OSMO_PFCP_MSGT_ASSOC_SETUP_REQ)
+		return 0;
 	return osmo_tdef_get(ep->cfg.tdefs, OSMO_PFCP_TIMER_KEEP_RESP, OSMO_TDEF_MS, -1);
 }
 
@@ -271,18 +276,23 @@ int osmo_pfcp_endpoint_tx_heartbeat_req(struct osmo_pfcp_endpoint *ep, const str
 static int osmo_pfcp_endpoint_retrans_queue_add(struct osmo_pfcp_endpoint *endpoint, struct osmo_pfcp_msg *m)
 {
 	struct osmo_pfcp_queue_entry *qe;
-	unsigned int n1 = ep_n1(endpoint);
-	unsigned int t1_ms = ep_t1(endpoint);
-	unsigned int keep_resp_ms = ep_keep_resp(endpoint);
-	unsigned int timeout = m->is_response ? keep_resp_ms : t1_ms;
+	unsigned int timeout_ms;
+	unsigned int n1 = 0;
 
-	LOGP(DLPFCP, LOGL_DEBUG, "retransmit unanswered Requests %u x %ums; keep sent Responses for %ums\n",
-	     n1, t1_ms, keep_resp_ms);
-	/* If there are no retransmissions or no timeout, it makes no sense to add to the queue. */
-	if (!n1 || !t1_ms) {
-		if (!m->is_response && m->ctx.resp_cb)
-			m->ctx.resp_cb(m, NULL, "PFCP timeout is zero, cannot wait for a response");
-		return 0;
+	if (m->is_response) {
+		timeout_ms = ep_keep_resp(endpoint, m);
+		OSMO_LOG_PFCP_MSG(m, LOGL_DEBUG, "keep sent Responses for %ums\n", timeout_ms);
+	} else {
+		timeout_ms = ep_t1(endpoint);
+		n1 = ep_n1(endpoint);
+
+		OSMO_LOG_PFCP_MSG(m, LOGL_DEBUG, "retransmit unanswered Requests %u x %ums\n", n1, timeout_ms);
+		/* If there are no retransmissions or no timeout, it makes no sense to add to the queue. */
+		if (!n1 || !timeout_ms) {
+			if (!m->is_response && m->ctx.resp_cb)
+				m->ctx.resp_cb(m, NULL, "PFCP timeout is zero, cannot wait for a response");
+			return 0;
+		}
 	}
 
 	qe = talloc(endpoint, struct osmo_pfcp_queue_entry);
@@ -290,7 +300,7 @@ static int osmo_pfcp_endpoint_retrans_queue_add(struct osmo_pfcp_endpoint *endpo
 	*qe = (struct osmo_pfcp_queue_entry){
 		.ep = endpoint,
 		.m = m,
-		.n1_remaining = m->is_response ? 0 : n1,
+		.n1_remaining = n1,
 	};
 	talloc_steal(qe, m);
 
@@ -308,7 +318,7 @@ static int osmo_pfcp_endpoint_retrans_queue_add(struct osmo_pfcp_endpoint *endpo
 	}
 	talloc_set_destructor(qe, osmo_pfcp_queue_destructor);
 
-	osmo_timer_schedule(&qe->t1, timeout/1000, (timeout % 1000) * 1000);
+	osmo_timer_schedule(&qe->t1, timeout_ms/1000, (timeout_ms % 1000) * 1000);
 	return 0;
 }
 
