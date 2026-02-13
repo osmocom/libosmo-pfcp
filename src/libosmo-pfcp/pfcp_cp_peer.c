@@ -195,6 +195,8 @@ struct osmo_pfcp_cp_peer *osmo_pfcp_cp_peer_alloc(void *ctx,
 
 	osmo_timer_setup(&cp_peer->heartbeat_tx_timer, pfcp_cp_peer_heartbeat_tx_timer_cb, cp_peer);
 	osmo_timer_setup(&cp_peer->heartbeat_rx_timer, pfcp_cp_peer_heartbeat_rx_timer_cb, cp_peer);
+
+	llist_add_tail(&cp_peer->entry, &ep->cp_peer_list);
 	return cp_peer;
 }
 
@@ -204,6 +206,7 @@ static void pfcp_cp_peer_fsm_cleanup(struct osmo_fsm_inst *fi, enum osmo_fsm_ter
 	struct osmo_pfcp_cp_peer *cp_peer = fi->priv;
 	osmo_timer_del(&cp_peer->heartbeat_tx_timer);
 	osmo_timer_del(&cp_peer->heartbeat_rx_timer);
+	llist_del(&cp_peer->entry);
 }
 
 void osmo_pfcp_cp_peer_free(struct osmo_pfcp_cp_peer *cp_peer)

@@ -44,6 +44,9 @@ struct osmo_pfcp_endpoint {
 	/* State for determining the next sequence number for transmitting a request message */
 	uint32_t seq_nr_state;
 
+	/* List of struct osmo_pfcp_cp_peer */
+	struct llist_head cp_peer_list;
+
 	/* All transmitted PFCP Request messages, list of osmo_pfcp_queue_entry.
 	 * For a transmitted Request message, wait for a matching Response from a remote peer; if none arrives,
 	 * retransmit (see n1 and t1_ms). */

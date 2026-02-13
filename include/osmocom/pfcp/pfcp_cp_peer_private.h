@@ -34,6 +34,8 @@ struct osmo_fsm_inst;
 struct osmo_pfcp_endpoint;
 
 struct osmo_pfcp_cp_peer {
+	/* item in (struct osmo_endpoint)->cp_peer_list */
+	struct llist_head entry;
 	struct osmo_fsm_inst *fi;
 	struct osmo_pfcp_endpoint *ep;
 	struct osmo_sockaddr remote_addr;

@@ -34,6 +34,7 @@
 
 #include <osmocom/pfcp/pfcp_endpoint.h>
 #include <osmocom/pfcp/pfcp_endpoint_private.h>
+#include <osmocom/pfcp/pfcp_cp_peer_private.h>
 #include <osmocom/pfcp/pfcp_msg.h>
 
 
@@ -111,6 +112,7 @@ struct osmo_pfcp_endpoint *osmo_pfcp_endpoint_create(void *ctx, const struct osm
 	if (!ep->cfg.tdefs)
 		ep->cfg.tdefs = osmo_pfcp_tdefs;
 
+	INIT_LLIST_HEAD(&ep->cp_peer_list);
 	INIT_LLIST_HEAD(&ep->sent_requests);
 	INIT_LLIST_HEAD(&ep->sent_responses);
 	hash_init(ep->sent_requests_by_seq_nr);
@@ -522,10 +524,14 @@ int osmo_pfcp_endpoint_bind(struct osmo_pfcp_endpoint *ep)
 void osmo_pfcp_endpoint_close(struct osmo_pfcp_endpoint *ep)
 {
 	struct osmo_pfcp_queue_entry *qe;
+	struct osmo_pfcp_cp_peer *cp_peer;
 	while ((qe = llist_first_entry_or_null(&ep->sent_requests, struct osmo_pfcp_queue_entry, entry)))
 		osmo_pfcp_queue_del(qe);
 	while ((qe = llist_first_entry_or_null(&ep->sent_responses, struct osmo_pfcp_queue_entry, entry)))
 		osmo_pfcp_queue_del(qe);
+
+	while ((cp_peer = llist_first_entry_or_null(&ep->cp_peer_list, struct osmo_pfcp_cp_peer, entry)))
+		osmo_pfcp_cp_peer_free(cp_peer);
 
 	osmo_iofd_free(ep->iofd);
 	ep->iofd = NULL;
