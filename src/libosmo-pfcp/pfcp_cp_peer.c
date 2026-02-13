@@ -99,12 +99,12 @@ static int on_pfcp_heartbeat_resp(struct osmo_pfcp_msg *req, struct osmo_pfcp_ms
 	struct osmo_pfcp_cp_peer *cp_peer = fi->priv;
 
 	if (!rx_resp) {
-		LOG_CP_PEER(cp_peer, LOGL_NOTICE, "Error: PFCP Heartbeat Response: %s\n",
+		OSMO_LOG_PFCP_MSG(req, LOGL_NOTICE, "Error: PFCP Heartbeat Response: %s\n",
 		    errmsg ? : "no response received");
 		return 0;
 	}
 
-	LOG_CP_PEER(cp_peer, LOGL_INFO, "Rx PFCP Heartbeat Response\n");
+	OSMO_LOG_PFCP_MSG(req, LOGL_INFO, "Rx PFCP Heartbeat Response\n");
 
 	if (fi->state != PFCP_CP_PEER_ST_ASSOCIATED)
 		return 0;
