@@ -27,7 +27,7 @@
 #include <osmocom/core/fsm.h>
 #include <osmocom/core/tdef.h>
 
-#include <osmocom/pfcp/pfcp_endpoint.h>
+#include <osmocom/pfcp/pfcp_endpoint_private.h>
 #include <osmocom/pfcp/pfcp_cp_peer_private.h>
 
 #define LOG_CP_PEER(CP_PEER, LOGLEVEL, FMT, ARGS...) \
