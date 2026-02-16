@@ -76,7 +76,7 @@ struct osmo_tdef osmo_pfcp_tdefs[] = {
 	{ .T = OSMO_PFCP_TIMER_HEARTBEAT_REQ, .default_val = 15, .unit = OSMO_TDEF_S,
 	  .desc = "PFCP Heartbeat Request period, how long to wait between issuing requests"
 	},
-	{ .T = OSMO_PFCP_TIMER_HEARTBEAT_RESP, .default_val = 15, .unit = OSMO_TDEF_S,
+	{ .T = OSMO_PFCP_TIMER_HEARTBEAT_RESP, .default_val = 35, .unit = OSMO_TDEF_S,
 	  .desc = "PFCP Heartbeat Response timeout, the time after which to regard a non-responding peer as disconnected"
 	},
 	{ .T = OSMO_PFCP_TIMER_GRACEFUL_REL, .default_val = 15, .unit = OSMO_TDEF_S,
@@ -128,14 +128,18 @@ struct osmo_pfcp_endpoint *osmo_pfcp_endpoint_create(void *ctx, const struct osm
 	return ep;
 }
 
-static unsigned int ep_n1(struct osmo_pfcp_endpoint *ep)
+static unsigned int ep_n1(struct osmo_pfcp_endpoint *ep, const struct osmo_pfcp_msg *m)
 {
+	if (m->h.message_type == OSMO_PFCP_MSGT_HEARTBEAT_REQ)
+		return 0;
 	return osmo_tdef_get(ep->cfg.tdefs, OSMO_PFCP_TIMER_N1, OSMO_TDEF_CUSTOM, -1);
 }
 
-static unsigned int ep_t1(struct osmo_pfcp_endpoint *ep)
+static unsigned int ep_t1(struct osmo_pfcp_endpoint *ep, const struct osmo_pfcp_msg *m)
 {
-	return osmo_tdef_get(ep->cfg.tdefs, OSMO_PFCP_TIMER_T1, OSMO_TDEF_MS, -1);
+	int T = m->h.message_type == OSMO_PFCP_MSGT_HEARTBEAT_REQ ? OSMO_PFCP_TIMER_HEARTBEAT_RESP :
+								    OSMO_PFCP_TIMER_T1;
+	return osmo_tdef_get(ep->cfg.tdefs, T, OSMO_TDEF_MS, -1);
 }
 
 static unsigned int ep_keep_resp(const struct osmo_pfcp_endpoint *ep, const struct osmo_pfcp_msg *m)
@@ -154,8 +158,8 @@ static int osmo_pfcp_endpoint_tx_data_no_logging(struct osmo_pfcp_endpoint *ep, 
 static bool pfcp_queue_retrans(struct osmo_pfcp_queue_entry *qe)
 {
 	struct osmo_pfcp_endpoint *endpoint = qe->ep;
-	unsigned int t1_ms = ep_t1(endpoint);
 	struct osmo_pfcp_msg *m = qe->m;
+	unsigned int t1_ms = ep_t1(endpoint, m);
 	int rc;
 
 	/* if no more attempts remaining, drop from queue */
@@ -260,12 +264,12 @@ static int osmo_pfcp_endpoint_retrans_queue_add(struct osmo_pfcp_endpoint *endpo
 		timeout_ms = ep_keep_resp(endpoint, m);
 		OSMO_LOG_PFCP_MSG(m, LOGL_DEBUG, "keep sent Responses for %ums\n", timeout_ms);
 	} else {
-		timeout_ms = ep_t1(endpoint);
-		n1 = ep_n1(endpoint);
+		timeout_ms = ep_t1(endpoint, m);
+		n1 = ep_n1(endpoint, m);
 
 		OSMO_LOG_PFCP_MSG(m, LOGL_DEBUG, "retransmit unanswered Requests %u x %ums\n", n1, timeout_ms);
-		/* If there are no retransmissions or no timeout, it makes no sense to add to the queue. */
-		if (!n1 || !timeout_ms) {
+		/* If there are no retransmissions and no timeout, it makes no sense to add to the queue. */
+		if (!n1 && !timeout_ms) {
 			if (!m->is_response && m->ctx.resp_cb)
 				m->ctx.resp_cb(m, NULL, "PFCP timeout is zero, cannot wait for a response");
 			return 0;
