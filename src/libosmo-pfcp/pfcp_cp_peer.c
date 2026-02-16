@@ -46,6 +46,7 @@ enum pfcp_cp_peer_fsm_event {
 	PFCP_CP_PEER_EV_RX_ASSOC_SETUP_RESP,
 	PFCP_CP_PEER_EV_RX_ASSOC_UPDATE_REQ,
 	PFCP_CP_PEER_EV_HEARTBEAT_TIMEOUT,
+	PFCP_CP_PEER_EV_RECOVERY_CHANGED,
 	PFCP_CP_PEER_EV_USE_COUNT_ZERO,
 };
 
@@ -53,6 +54,7 @@ static const struct value_string pfcp_cp_peer_fsm_event_names[] = {
 	OSMO_VALUE_STRING(PFCP_CP_PEER_EV_RX_ASSOC_SETUP_RESP),
 	OSMO_VALUE_STRING(PFCP_CP_PEER_EV_RX_ASSOC_UPDATE_REQ),
 	OSMO_VALUE_STRING(PFCP_CP_PEER_EV_HEARTBEAT_TIMEOUT),
+	OSMO_VALUE_STRING(PFCP_CP_PEER_EV_RECOVERY_CHANGED),
 	OSMO_VALUE_STRING(PFCP_CP_PEER_EV_USE_COUNT_ZERO),
 	{}
 };
@@ -97,6 +99,7 @@ static int on_pfcp_heartbeat_resp(struct osmo_pfcp_msg *req, struct osmo_pfcp_ms
 {
 	struct osmo_fsm_inst *fi = req->ctx.peer_fi;
 	struct osmo_pfcp_cp_peer *cp_peer = fi->priv;
+	uint32_t rx_recovery_ts;
 
 	if (!rx_resp) {
 		OSMO_LOG_PFCP_MSG(req, LOGL_NOTICE, "Error: PFCP Heartbeat Response: %s\n",
@@ -104,7 +107,21 @@ static int on_pfcp_heartbeat_resp(struct osmo_pfcp_msg *req, struct osmo_pfcp_ms
 		return 0;
 	}
 
-	OSMO_LOG_PFCP_MSG(rx_resp, LOGL_INFO, "Rx PFCP Heartbeat Response\n");
+	rx_recovery_ts = rx_resp->ies.heartbeat_resp.recovery_time_stamp;
+	OSMO_LOG_PFCP_MSG(rx_resp, LOGL_INFO, "Rx PFCP Heartbeat Response (recovery=%" PRIu32 ")\n",
+			  rx_recovery_ts);
+
+	if (cp_peer->recovery_timestamp_known && cp_peer->recovery_timestamp != rx_recovery_ts) {
+		OSMO_LOG_PFCP_MSG(rx_resp, LOGL_NOTICE,
+					"Rx PFCP Heartbeat Request: Recovery Timestamp change %"PRIu32 " -> %" PRIu32 "\n",
+					cp_peer->recovery_timestamp, rx_recovery_ts);
+		cp_peer->recovery_timestamp = rx_recovery_ts;
+		osmo_fsm_inst_dispatch(fi, PFCP_CP_PEER_EV_RECOVERY_CHANGED, NULL);
+		return 0;
+	}
+
+	cp_peer->recovery_timestamp = rx_recovery_ts;
+	cp_peer->recovery_timestamp_known = true;
 
 	if (fi->state != PFCP_CP_PEER_ST_ASSOCIATED)
 		return 0;
@@ -357,6 +374,11 @@ static void pfcp_cp_peer_associated_action(struct osmo_fsm_inst *fi, uint32_t ev
 		osmo_pfcp_cp_peer_fsm_state_chg(PFCP_CP_PEER_ST_WAIT_ASSOC_SETUP_RESP);
 		break;
 
+	case PFCP_CP_PEER_EV_RECOVERY_CHANGED:
+		LOG_CP_PEER(cp_peer, LOGL_NOTICE, "Recovery Timestamp Changed!\n");
+		osmo_pfcp_cp_peer_fsm_state_chg(PFCP_CP_PEER_ST_WAIT_ASSOC_SETUP_RESP);
+		break;
+
 	default:
 		OSMO_ASSERT(false);
 	}
@@ -445,6 +467,7 @@ static const struct osmo_fsm_state pfcp_cp_peer_fsm_states[] = {
 		.in_event_mask = 0
 			| S(PFCP_CP_PEER_EV_RX_ASSOC_UPDATE_REQ)
 			| S(PFCP_CP_PEER_EV_HEARTBEAT_TIMEOUT)
+			| S(PFCP_CP_PEER_EV_RECOVERY_CHANGED)
 			,
 		.out_state_mask = 0
 			| S(PFCP_CP_PEER_ST_WAIT_ASSOC_SETUP_RESP)

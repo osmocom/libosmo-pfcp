@@ -39,6 +39,10 @@ struct osmo_pfcp_cp_peer {
 	struct osmo_sockaddr remote_addr;
 	uint64_t next_seid_state;
 
+	/* Recovery Timestamp received from peer, if recovery_timestamp_known=true */
+	bool recovery_timestamp_known;
+	uint32_t recovery_timestamp;
+
 	/* If non-NULL, called whenever the peer completes a PFCP Association, and when it loses association.
 	 * Argument associated == true means the peer has just associated;
 	 * associated == false means the association has been lost. */
