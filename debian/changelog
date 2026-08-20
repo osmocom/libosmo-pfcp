@@ -1,3 +1,12 @@
+libosmo-pfcp (0.7.0) unstable; urgency=medium
+
+  * Avoid marking rx PFCP Assoc Setup Req as duplicate
+  * Move struct osmo_pfcp_endpoint to pfcp_endpoint_private.h
+  * cp_peer: Implement local originated heartbeat procedure
+  * pfcp: Trigger assoc_cb(false) upon Recovery Timestamp change
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Thu, 20 Aug 2026 11:32:03 +0200
+
 libosmo-pfcp (0.6.0) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]
