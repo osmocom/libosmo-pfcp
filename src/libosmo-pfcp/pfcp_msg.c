@@ -135,6 +135,36 @@ int osmo_pfcp_ie_node_id_to_osmo_sockaddr(const struct osmo_pfcp_ie_node_id *nod
 	return 0;
 }
 
+int osmo_pfcp_ie_node_id_from_str(struct osmo_pfcp_ie_node_id *node_id, const char *str)
+{
+	int rc;
+
+	if (!str)
+		return -EINVAL;
+	if (str[0] == '\0')
+		return -EINVAL;
+
+	rc = osmo_sockaddr_pton(str, &node_id->ip.u.sa);
+
+	if (rc != 1) { /* pton() failed, assume fqdn: */
+		node_id->type = OSMO_PFCP_NODE_ID_T_FQDN;
+		OSMO_STRLCPY_ARRAY(node_id->fqdn, str);
+		return 0;
+	}
+
+	switch (node_id->ip.u.sa.sa_family) {
+	case AF_INET:
+		node_id->type = OSMO_PFCP_NODE_ID_T_IPV4;
+		break;
+	case AF_INET6:
+		node_id->type = OSMO_PFCP_NODE_ID_T_IPV6;
+		break;
+	default:
+		return -ENOTSUP;
+	}
+	return 0;
+}
+
 int osmo_pfcp_ie_node_id_cmp(const struct osmo_pfcp_ie_node_id *a, const struct osmo_pfcp_ie_node_id *b)
 {
 	if (a == b)

@@ -7,3 +7,5 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
+libosmo-pfcp    add                     osmo_pfcp_ie_node_id_from_str()
+libosmcore      >1.14.2                 osmo_sockaddr_pton()
